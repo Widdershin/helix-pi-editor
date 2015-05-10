@@ -34,6 +34,7 @@ HelixPiEditor.Loading.preload = function () {
     * Replace with your own in-assets to load.
     **/
     this.addImage('kiwiName', 'assets/img/kiwijs-name.png');
+    this.addImage('entity', 'assets/img/entity.png');
     this.addSpriteSheet('icons', 'assets/img/kiwijs-icons.png', 100, 90);
 
 };
