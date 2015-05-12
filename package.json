@@ -18,6 +18,7 @@
   "main": "src",
   "dependencies": {
     "babel": "^5.2.15",
+    "express": "^4.12.3",
     "helix-pi": "0.0.1",
     "lodash": "^3.8.0"
   },
