@@ -9,6 +9,7 @@
 
 //Initialise the Kiwi Game. 
 
+
 var gameOptions = {
 	renderer: Kiwi.RENDERER_CANVAS, 
 	width: 800,

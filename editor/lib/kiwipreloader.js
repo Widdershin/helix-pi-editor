@@ -21,6 +21,7 @@
 
 var KiwiLoadingScreen = function(name, stateToSwitch,subfolder, dimensions) {
 
+
 	//Call the Super
 	Kiwi.State.call(this, name);
 

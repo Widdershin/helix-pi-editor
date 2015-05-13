@@ -1,4 +1,4 @@
-var HelixPiEditor = HelixPiEditor || {};
+var HelixPiEditor = window.HelixPiEditor || {};
 
 HelixPiEditor.Intro = new Kiwi.State('Intro');
 

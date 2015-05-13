@@ -1,5 +1,6 @@
 /* global Kiwi */
 'use strict';
+
 var HelixPiEditor = HelixPiEditor || {};
 
 HelixPiEditor.Play = new Kiwi.State('Play');
@@ -81,5 +82,6 @@ HelixPiEditor.Play.onPress = function (keyCode) {
 
   if (keyCode === Kiwi.Input.Keycodes.R) {
     console.log(this.createScenario());
+    console.log(helixPi());
   }
 };

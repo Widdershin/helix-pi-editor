@@ -28,3 +28,5 @@ node_modules
 
 # Kiwi JS
 lib/kiwi.js/
+
+public/

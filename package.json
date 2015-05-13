@@ -19,14 +19,18 @@
   "dependencies": {
     "babel": "^5.2.15",
     "express": "^4.12.3",
-    "helix-pi": "0.0.1",
+    "helix-pi": "git://github.com/widdershin/helix-pi",
     "lodash": "^3.8.0"
   },
   "devDependencies": {
+    "babelify": "^6.1.0",
     "grunt": "~0.4.x",
-    "grunt-contrib-uglify": "0.2.x",
-    "grunt-contrib-copy": "0.4.x",
     "grunt-contrib-concat": "latest",
-    "grunt-contrib-connect": "~0.3.0"
+    "grunt-contrib-connect": "~0.3.0",
+    "grunt-contrib-copy": "0.4.x",
+    "grunt-contrib-uglify": "0.2.x"
+  },
+  "scripts": {
+    "start": "./node_modules/.bin/babel-node ./index.js"
   }
 }
