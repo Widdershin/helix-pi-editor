@@ -31,9 +31,11 @@ HelixPiEditor.Play.update = function () {
 };
 
 HelixPiEditor.Play.createScenario = function () {
+  var startPosition = this.positions[0];
+
   return {
     startingPosition: function () {
-      return this.positions[0];
+      return JSON.parse(JSON.stringify(startPosition));
     },
 
     expectedEndPosition: this.positions[1],
@@ -81,7 +83,11 @@ HelixPiEditor.Play.onPress = function (keyCode) {
   }
 
   if (keyCode === Kiwi.Input.Keycodes.R) {
-    console.log(this.createScenario());
-    console.log(helixPi());
+    this.results = helixPi(this.createScenario());
+    this.renderCode(this.results[0].entity.individual);
   }
+};
+
+HelixPiEditor.Play.renderCode = function (lines) {
+  console.log(lines.map(function(f) { return f.toSource(); }).join('\n'));
 };
