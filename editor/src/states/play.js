@@ -22,30 +22,49 @@ HelixPiEditor.Play.create = function () {
   this.currentFrame = 0;
 
   this.positions = {};
+
+  this.api = (function(entity) {
+    return {
+      move: function(coordinates) {
+        entity.x += coordinates.x;
+        entity.y += coordinates.y;
+      }
+    }
+  });
+
+  this.compiledApi = this.api(this.entity);
 };
 
 HelixPiEditor.Play.update = function () {
   Kiwi.State.prototype.update.call(this);
 
   this.frameText.text = ['Frame: ', this.currentFrame].join('');
+
+  if (this.play) {
+    var compiledApi = this.compiledApi;
+    _.each(this.codeToPlay, function (instruction) {
+      instruction(compiledApi);
+    });
+  }
 };
 
 HelixPiEditor.Play.createScenario = function () {
   var startPosition = this.positions[0];
+  var expectedEndPosition = this.positions[1];
 
   return {
     startingPosition: function () {
       return JSON.parse(JSON.stringify(startPosition));
     },
 
-    expectedEndPosition: this.positions[1],
+    expectedEndPosition: expectedEndPosition,
 
     duration: 60,
 
     fitness: function (entity) {
       var distance = {
-        x: Math.abs(this.expectedEndPosition.x - entity.position.x),
-        y: Math.abs(this.expectedEndPosition.y - entity.position.y)
+        x: Math.abs(expectedEndPosition.x - entity.x),
+        y: Math.abs(expectedEndPosition.y - entity.y)
       };
 
       return 1000 - (distance.x + distance.y);
@@ -83,7 +102,14 @@ HelixPiEditor.Play.onPress = function (keyCode) {
   }
 
   if (keyCode === Kiwi.Input.Keycodes.R) {
-    this.results = helixPi(this.createScenario());
+    this.results = helixPi(this.createScenario(), this.api);
+    this.currentFrame = 0;
+    this.loadPosition();
+    this.play = true;
+    this.entity.x = 100;
+    this.entity.y = 100;
+    this.codeToPlay = this.results[0].entity.individual;
+    console.log(this.results[0].fitness);
     this.renderCode(this.results[0].entity.individual);
   }
 };
