@@ -20,8 +20,9 @@ HelixPiEditor.Play.create = function () {
   this.addChild(this.frameText);
 
   this.currentFrame = 0;
+  this.highestFrame = 0;
 
-  this.positions = {};
+  this.positions = [];
 
   this.api = (function(entity) {
     return {
@@ -50,21 +51,23 @@ HelixPiEditor.Play.update = function () {
 
 HelixPiEditor.Play.createScenario = function () {
   var startPosition = this.positions[0];
-  var expectedEndPosition = this.positions[1];
+  var expectedPositions = this.positions.slice(1, this.highestFrame + 1);
 
   return {
     startingPosition: function () {
       return JSON.parse(JSON.stringify(startPosition));
     },
 
-    expectedEndPosition: expectedEndPosition,
+    expectedPositions: expectedPositions.map(function(expectedPosition, index) {
+      expectedPosition.frame = index * 60;
 
-    duration: 60,
+      return expectedPosition;
+    }),
 
-    fitness: function (entity) {
+    fitness: function (expectedPosition, entity) {
       var distance = {
-        x: Math.abs(expectedEndPosition.x - entity.x),
-        y: Math.abs(expectedEndPosition.y - entity.y)
+        x: Math.abs(expectedPosition.x - entity.x),
+        y: Math.abs(expectedPosition.y - entity.y)
       };
 
       return 1000 - (distance.x + distance.y);
@@ -73,6 +76,10 @@ HelixPiEditor.Play.createScenario = function () {
 };
 
 HelixPiEditor.Play.savePosition = function () {
+  if (this.currentFrame > this.highestFrame) {
+    this.highestFrame = this.currentFrame;
+  }
+
   this.positions[this.currentFrame] = {
     x: this.entity.x,
     y: this.entity.y
