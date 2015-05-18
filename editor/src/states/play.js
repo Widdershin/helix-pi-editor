@@ -115,9 +115,9 @@ HelixPiEditor.Play.onPress = function (keyCode) {
     this.play = true;
     this.entity.x = 100;
     this.entity.y = 100;
-    this.codeToPlay = this.results[0].entity.individual;
+    this.codeToPlay = this.results[0].individual;
     console.log(this.results[0].fitness);
-    this.renderCode(this.results[0].entity.individual);
+    this.renderCode(this.results[0].individual);
   }
 };
 
