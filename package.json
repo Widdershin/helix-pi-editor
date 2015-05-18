@@ -33,6 +33,6 @@
   },
   "scripts": {
     "start": "./node_modules/.bin/babel-node ./index.js",
-    "prestart": "./node_modules/.bin/browserify --debug bundle.js | ./node_modules/.bin/babel > public/bundle.js"
+    "bundle": "cat bundle.js | ./node_modules/.bin/browserify - | ./node_modules/.bin/babel -o public/bundle.js"
   }
 }
