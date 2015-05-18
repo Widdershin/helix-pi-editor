@@ -1,0 +1,14 @@
+#content {
+  margin: auto;
+  border: 1px solid white;
+}
+
+body {
+  background: black;
+  color: white;
+}
+
+h2, p {
+  text-align: center;
+  font-family: 'Helvetica', 'Arial';
+}
