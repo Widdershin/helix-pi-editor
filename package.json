@@ -20,7 +20,7 @@
     "babel": "^5.2.15",
     "browserify": "^10.1.3",
     "express": "^4.12.3",
-    "helix-pi": "git://github.com/widdershin/helix-pi",
+    "helix-pi": "widdershin/helix-pi",
     "lodash": "^3.8.0"
   },
   "devDependencies": {
