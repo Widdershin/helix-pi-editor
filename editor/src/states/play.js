@@ -29,6 +29,13 @@ HelixPiEditor.Play.create = function () {
       move: function(coordinates) {
         entity.x += coordinates.x;
         entity.y += coordinates.y;
+      },
+
+      getPosition: function() {
+        return {
+          x: entity.x,
+          y: entity.y,
+        }
       }
     }
   });
