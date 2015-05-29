@@ -23,6 +23,7 @@ HelixPiEditor.Play.create = function () {
   this.highestFrame = 0;
 
   this.positions = [];
+  this.line = {destroy: function () {}};
 
   this.api = (function(entity) {
     return {
@@ -77,7 +78,7 @@ HelixPiEditor.Play.createScenario = function () {
         y: Math.abs(expectedPosition.y - entity.y)
       };
 
-      return 1000 - (distance.x + distance.y);
+      return 1000 - Math.pow((distance.x + distance.y), 1.4);
     }
   };
 };
@@ -88,18 +89,31 @@ HelixPiEditor.Play.savePosition = function () {
   }
 
   this.positions[this.currentFrame] = {
-    x: this.entity.x,
-    y: this.entity.y
+    x: this.entity.x + this.entity.width / 2,
+    y: this.entity.y + this.entity.height / 2,
   };
+
+  this.updatePath();
 };
+
+HelixPiEditor.Play.updatePath = function () {
+  this.line.destroy();
+  this.line = new Kiwi.Plugins.Primitives.Line({
+    state: this,
+    points: this.positions.slice(0, this.highestFrame + 1).map(function (position) { return [position.x, position.y] }),
+    strokeColor: [1, 1, 1],
+    strokeWidth: 4,
+  });
+  this.addChild(this.line);
+}
 
 HelixPiEditor.Play.loadPosition = function () {
   if (!this.positions[this.currentFrame]) {
     return;
   };
 
-  this.entity.x = this.positions[this.currentFrame].x;
-  this.entity.y = this.positions[this.currentFrame].y;
+  this.entity.x = this.positions[this.currentFrame].x - this.entity.width / 2;
+  this.entity.y = this.positions[this.currentFrame].y - this.entity.height / 2;
 };
 
 HelixPiEditor.Play.onPress = function (keyCode) {
@@ -120,8 +134,6 @@ HelixPiEditor.Play.onPress = function (keyCode) {
     this.currentFrame = 0;
     this.loadPosition();
     this.play = true;
-    this.entity.x = 100;
-    this.entity.y = 100;
     this.codeToPlay = this.results[0].individual;
     console.log(this.results[0].fitness);
     this.renderCode(this.results[0].individual);
