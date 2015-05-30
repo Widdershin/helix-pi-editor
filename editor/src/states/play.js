@@ -1,4 +1,4 @@
-/* global Kiwi */
+/* global Kiwi, _, helixPi */
 'use strict';
 
 var HelixPiEditor = HelixPiEditor || {};
@@ -20,26 +20,28 @@ HelixPiEditor.Play.create = function () {
   this.addChild(this.frameText);
 
   this.currentFrame = 0;
+  this.currentKeyFrame = 0;
   this.highestFrame = 0;
 
   this.positions = [];
   this.line = {destroy: function () {}};
+  this.progressIndicator = {destroy: function () {}};
 
-  this.api = (function(entity) {
+  this.api = function (entity) {
     return {
-      move: function(coordinates) {
+      move: function (coordinates) {
         entity.x += coordinates.x;
         entity.y += coordinates.y;
       },
 
-      getPosition: function() {
+      getPosition: function () {
         return {
           x: entity.x,
-          y: entity.y,
-        }
+          y: entity.y
+        };
       }
-    }
-  });
+    };
+  };
 
   this.compiledApi = this.api(this.entity);
 };
@@ -47,14 +49,39 @@ HelixPiEditor.Play.create = function () {
 HelixPiEditor.Play.update = function () {
   Kiwi.State.prototype.update.call(this);
 
-  this.frameText.text = ['Frame: ', this.currentFrame].join('');
+  this.frameText.text = ['Frame: ', this.currentKeyFrame].join('');
 
   if (this.play) {
     var compiledApi = this.compiledApi;
     _.each(this.codeToPlay, function (instruction) {
       instruction(compiledApi);
     });
+
+    this.displayProgressIndicator(this.currentKeyFrame / (this.highestFrame * 60));
+    this.currentKeyFrame += 1;
   }
+};
+
+HelixPiEditor.Play.displayProgressIndicator = function (progress) {
+  var indicatorHeight = 60;
+  this.progressIndicator.destroy();
+
+  console.log([
+      [this.game.stage.width * progress, this.game.stage.height - indicatorHeight],
+      [this.game.stage.width * progress, this.game.stage.height]
+  ]);
+
+  this.progressIndicator = new Kiwi.Plugins.Primitives.Line({
+    state: this,
+    points: [
+      [this.game.stage.width * progress, this.game.stage.height - indicatorHeight],
+      [this.game.stage.width * progress, this.game.stage.height]
+    ],
+    strokeColor: [1, 1, 1],
+    strokeWidth: 4
+  });
+
+  this.addChild(this.progressIndicator);
 };
 
 HelixPiEditor.Play.createScenario = function () {
@@ -66,7 +93,7 @@ HelixPiEditor.Play.createScenario = function () {
       return JSON.parse(JSON.stringify(startPosition));
     },
 
-    expectedPositions: expectedPositions.map(function(expectedPosition, index) {
+    expectedPositions: expectedPositions.map(function (expectedPosition, index) {
       expectedPosition.frame = index * 60;
 
       return expectedPosition;
@@ -84,13 +111,13 @@ HelixPiEditor.Play.createScenario = function () {
 };
 
 HelixPiEditor.Play.savePosition = function () {
-  if (this.currentFrame > this.highestFrame) {
-    this.highestFrame = this.currentFrame;
+  if (this.currentKeyFrame > this.highestFrame) {
+    this.highestFrame = this.currentKeyFrame;
   }
 
-  this.positions[this.currentFrame] = {
+  this.positions[this.currentKeyFrame] = {
     x: this.entity.x + this.entity.width / 2,
-    y: this.entity.y + this.entity.height / 2,
+    y: this.entity.y + this.entity.height / 2
   };
 
   this.updatePath();
@@ -100,37 +127,38 @@ HelixPiEditor.Play.updatePath = function () {
   this.line.destroy();
   this.line = new Kiwi.Plugins.Primitives.Line({
     state: this,
-    points: this.positions.slice(0, this.highestFrame + 1).map(function (position) { return [position.x, position.y] }),
+    points: this.positions.slice(0, this.highestFrame + 1).map(function (position) { return [position.x, position.y]; }),
     strokeColor: [1, 1, 1],
-    strokeWidth: 4,
+    strokeWidth: 4
   });
   this.addChild(this.line);
-}
+};
 
 HelixPiEditor.Play.loadPosition = function () {
-  if (!this.positions[this.currentFrame]) {
+  if (!this.positions[this.currentKeyFrame]) {
     return;
-  };
+  }
 
-  this.entity.x = this.positions[this.currentFrame].x - this.entity.width / 2;
-  this.entity.y = this.positions[this.currentFrame].y - this.entity.height / 2;
+  this.entity.x = this.positions[this.currentKeyFrame].x - this.entity.width / 2;
+  this.entity.y = this.positions[this.currentKeyFrame].y - this.entity.height / 2;
 };
 
 HelixPiEditor.Play.onPress = function (keyCode) {
   if (keyCode === Kiwi.Input.Keycodes.RIGHT) {
     this.savePosition();
-    this.currentFrame += 1;
+    this.currentKeyFrame += 1;
     this.loadPosition();
   }
 
   if (keyCode === Kiwi.Input.Keycodes.LEFT) {
     this.savePosition();
-    this.currentFrame -= 1;
+    this.currentKeyFrame -= 1;
     this.loadPosition();
   }
 
   if (keyCode === Kiwi.Input.Keycodes.R) {
     this.results = helixPi(this.createScenario(), this.api);
+    this.currentKeyFrame = 0;
     this.currentFrame = 0;
     this.loadPosition();
     this.play = true;
@@ -141,5 +169,5 @@ HelixPiEditor.Play.onPress = function (keyCode) {
 };
 
 HelixPiEditor.Play.renderCode = function (lines) {
-  console.log(lines.map(function(f) { return f.toSource(); }).join('\n'));
+  console.log(lines.map(function (f) { return f.toSource(); }).join('\n'));
 };
