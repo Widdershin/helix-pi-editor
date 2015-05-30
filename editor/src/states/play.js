@@ -101,11 +101,6 @@ HelixPiEditor.Play.displayProgressIndicator = function (progress) {
   var indicatorHeight = 60;
   this.progressIndicator.destroy();
 
-  console.log([
-      [this.game.stage.width * progress, this.game.stage.height - indicatorHeight],
-      [this.game.stage.width * progress, this.game.stage.height]
-  ]);
-
   this.progressIndicator = new Kiwi.Plugins.Primitives.Line({
     state: this,
     points: [
