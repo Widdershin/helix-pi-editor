@@ -9,6 +9,7 @@ HelixPiEditor.Play.create = function () {
   this.entity = new Kiwi.GameObjects.Sprite(this, this.textures.entity, 100, 100, true);
   this.addChild(this.entity);
   this.entity.input.enableDrag();
+  this.entity.input.onDragStopped.add(this.droppedEntity, this);
 
   this.game.input.keyboard.onKeyDown.add(
     this.onPress,
@@ -26,6 +27,40 @@ HelixPiEditor.Play.create = function () {
   this.positions = [];
   this.line = {destroy: function () {}};
   this.progressIndicator = {destroy: function () {}};
+
+  this.nextKeyFrameButton = new Kiwi.HUD.Widget.Button(
+    this.game,
+    'Next Keyframe',
+    this.game.stage.width - 130,
+    5
+  );
+  this.game.huds.defaultHUD.addWidget(this.nextKeyFrameButton);
+  styleButton(this.nextKeyFrameButton);
+
+  this.prevKeyFrameButton = new Kiwi.HUD.Widget.Button(
+    this.game,
+    'Prev Keyframe',
+    this.game.stage.width - 250,
+    5
+  );
+  this.game.huds.defaultHUD.addWidget(this.prevKeyFrameButton);
+  styleButton(this.prevKeyFrameButton);
+
+  this.nextKeyFrameButton.input.onDown.add(this.nextKeyFrame, this);
+  this.prevKeyFrameButton.input.onDown.add(this.prevKeyFrame, this);
+
+  function styleButton (button) {
+    _.assign(
+      button.style,
+      {
+        color: 'white',
+        backgroundColor: 'gray',
+        padding: '5px',
+        'border-radius': '3px',
+        'font-family': 'Arial'
+      }
+    )
+  }
 
   this.api = function (entity) {
     return {
@@ -143,17 +178,25 @@ HelixPiEditor.Play.loadPosition = function () {
   this.entity.y = this.positions[this.currentKeyFrame].y - this.entity.height / 2;
 };
 
+HelixPiEditor.Play.nextKeyFrame = function () {
+  this.savePosition();
+  this.currentKeyFrame += 1;
+  this.loadPosition();
+}
+
+HelixPiEditor.Play.prevKeyFrame = function () {
+  this.savePosition();
+  this.currentKeyFrame -= 1;
+  this.loadPosition();
+}
+
 HelixPiEditor.Play.onPress = function (keyCode) {
   if (keyCode === Kiwi.Input.Keycodes.RIGHT) {
-    this.savePosition();
-    this.currentKeyFrame += 1;
-    this.loadPosition();
+    this.nextKeyFrame();
   }
 
   if (keyCode === Kiwi.Input.Keycodes.LEFT) {
-    this.savePosition();
-    this.currentKeyFrame -= 1;
-    this.loadPosition();
+    this.prevKeyFrame();
   }
 
   if (keyCode === Kiwi.Input.Keycodes.R) {
@@ -164,10 +207,9 @@ HelixPiEditor.Play.onPress = function (keyCode) {
     this.play = true;
     this.codeToPlay = this.results[0].individual;
     console.log(this.results[0].fitness);
-    this.renderCode(this.results[0].individual);
   }
 };
 
-HelixPiEditor.Play.renderCode = function (lines) {
-  console.log(lines.map(function (f) { return f.toSource(); }).join('\n'));
-};
+HelixPiEditor.Play.droppedEntity = function ()  {
+  this.savePosition();
+}
