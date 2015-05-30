@@ -22,5 +22,6 @@ var game = new Kiwi.Game('content', 'HelixPiEditor', null, gameOptions);
 game.states.addState(HelixPiEditor.Loading);
 game.states.addState(HelixPiEditor.Intro);
 game.states.addState(HelixPiEditor.Play);
+game.states.addState(HelixPiEditor.Editor);
 
 game.states.switchState("Loading");

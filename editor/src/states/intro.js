@@ -12,5 +12,5 @@ HelixPiEditor.Intro = new Kiwi.State('Intro');
 
 
 HelixPiEditor.Intro.create = function () {
-    game.states.switchState("Play");
+  game.states.switchState("Editor");
 }
