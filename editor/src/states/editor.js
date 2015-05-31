@@ -35,49 +35,32 @@ HelixPiEditor.Editor.create = function () {
   this.line = {destroy: function () {}};
   this.progressIndicator = {destroy: function () {}};
 
+  var that = this;
 
-  function createButton(name, x, y) {
-    var newButton = new Kiwi.HUD.Widget.Button(this.game, name, x, y);
-    this.game.huds.defaultHUD.addWidget(newButton);
-    styleButton(newButton);
-
-    return newButton;
-  }
-
-  this.prevKeyFrameButton = createButton(
+  this.prevKeyFrameButton = HelixPiEditor.buttons.create(
+    this,
     'Prev Keyframe',
     this.game.stage.width - 250,
     5
   );
 
-  this.createProgramButton = createButton(
-    'Create Program',
-    this.game.stage.width - 250,
-    40
-  );
-
-  this.nextKeyFrameButton = createButton(
+  this.nextKeyFrameButton = HelixPiEditor.buttons.create(
+    this,
     'Next Keyframe',
     this.game.stage.width - 130,
     5
   );
 
+  this.playProgramButton = HelixPiEditor.buttons.create(
+    this,
+    'Play Program',
+    this.game.stage.width - 250,
+    35
+  );
+
   this.nextKeyFrameButton.input.onDown.add(this.nextKeyFrame, this);
   this.prevKeyFrameButton.input.onDown.add(this.prevKeyFrame, this);
-  this.createProgramButton.input.onDown.add(this.createProgram, this);
-
-  function styleButton (button) {
-    _.assign(
-      button.style,
-      {
-        color: 'white',
-        backgroundColor: 'gray',
-        padding: '5px',
-        'border-radius': '3px',
-        'font-family': 'Arial'
-      }
-    )
-  }
+  this.playProgramButton.input.onDown.add(this.playProgram, this);
 
   this.api = function (entity) {
     return {
@@ -95,7 +78,6 @@ HelixPiEditor.Editor.create = function () {
     };
   };
 
-  this.compiledApi = this.api(this.entity);
 };
 
 HelixPiEditor.Editor.update = function () {
@@ -103,15 +85,6 @@ HelixPiEditor.Editor.update = function () {
 
   this.frameText.text = ['Frame: ', this.currentKeyFrame].join('');
 
-  if (this.play) {
-    var compiledApi = this.compiledApi;
-    _.each(this.codeToPlay, function (instruction) {
-      instruction(compiledApi);
-    });
-
-    this.displayProgressIndicator(this.currentFrame / (this.highestFrame * 60));
-    this.currentFrame += 1;
-  }
 };
 
 HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
@@ -196,13 +169,13 @@ HelixPiEditor.Editor.nextKeyFrame = function () {
   this.savePosition();
   this.currentKeyFrame += 1;
   this.loadPosition();
-}
+};
 
 HelixPiEditor.Editor.prevKeyFrame = function () {
   this.savePosition();
   this.currentKeyFrame -= 1;
   this.loadPosition();
-}
+};
 
 HelixPiEditor.Editor.onPress = function (keyCode) {
   if (keyCode === Kiwi.Input.Keycodes.RIGHT) {
@@ -218,15 +191,16 @@ HelixPiEditor.Editor.onPress = function (keyCode) {
   }
 };
 
-HelixPiEditor.Editor.droppedEntity = function ()  {
+HelixPiEditor.Editor.droppedEntity = function () {
   this.savePosition();
-}
+};
 
 HelixPiEditor.Editor.createProgram = function () {
   this.results = helixPi(this.createScenario(), this.api);
-  this.currentKeyFrame = 0;
-  this.currentFrame = 0;
-  this.loadPosition();
-  this.play = true;
-  this.codeToPlay = this.results[0].individual;
-}
+};
+
+HelixPiEditor.Editor.playProgram = function () {
+  this.createProgram();
+  HelixPiEditor.results(this.results.slice(0, 8));
+  this.game.states.switchState('Play');
+};
