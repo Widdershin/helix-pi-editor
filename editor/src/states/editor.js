@@ -35,32 +35,32 @@ HelixPiEditor.Editor.create = function () {
   this.line = {destroy: function () {}};
   this.progressIndicator = {destroy: function () {}};
 
-  this.nextKeyFrameButton = new Kiwi.HUD.Widget.Button(
-    this.game,
-    'Next Keyframe',
-    this.game.stage.width - 130,
-    5
-  );
-  this.game.huds.defaultHUD.addWidget(this.nextKeyFrameButton);
-  styleButton(this.nextKeyFrameButton);
 
-  this.prevKeyFrameButton = new Kiwi.HUD.Widget.Button(
-    this.game,
+  function createButton(name, x, y) {
+    var newButton = new Kiwi.HUD.Widget.Button(this.game, name, x, y);
+    this.game.huds.defaultHUD.addWidget(newButton);
+    styleButton(newButton);
+
+    return newButton;
+  }
+
+  this.prevKeyFrameButton = createButton(
     'Prev Keyframe',
     this.game.stage.width - 250,
     5
   );
-  this.game.huds.defaultHUD.addWidget(this.prevKeyFrameButton);
-  styleButton(this.prevKeyFrameButton);
 
-  this.createProgramButton = new Kiwi.HUD.Widget.Button(
-    this.game,
+  this.createProgramButton = createButton(
     'Create Program',
     this.game.stage.width - 250,
     40
   );
-  this.game.huds.defaultHUD.addWidget(this.createProgramButton);
-  styleButton(this.createProgramButton);
+
+  this.nextKeyFrameButton = createButton(
+    'Next Keyframe',
+    this.game.stage.width - 130,
+    5
+  );
 
   this.nextKeyFrameButton.input.onDown.add(this.nextKeyFrame, this);
   this.prevKeyFrameButton.input.onDown.add(this.prevKeyFrame, this);
