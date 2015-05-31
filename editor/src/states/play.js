@@ -21,7 +21,7 @@ HelixPiEditor.Play.create = function () {
   this.play = true;
   this.compiledApi = HelixPiEditor.Editor.api(this.entity);
 
-  HelixPiEditor.buttons.cleanUp();
+  this.game.huds.defaultHUD.removeAllWidgets();
   var backToEditorButton = HelixPiEditor.buttons.create(
     this,
     'Back to Editor',
