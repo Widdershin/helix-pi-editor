@@ -64,6 +64,7 @@ HelixPiEditor.Editor.create = function () {
 
   this.nextKeyFrameButton.input.onDown.add(this.nextKeyFrame, this);
   this.prevKeyFrameButton.input.onDown.add(this.prevKeyFrame, this);
+  this.createProgramButton.input.onDown.add(this.createProgram, this);
 
   function styleButton (button) {
     _.assign(
@@ -108,8 +109,8 @@ HelixPiEditor.Editor.update = function () {
       instruction(compiledApi);
     });
 
-    this.displayProgressIndicator(this.currentKeyFrame / (this.highestFrame * 60));
-    this.currentKeyFrame += 1;
+    this.displayProgressIndicator(this.currentFrame / (this.highestFrame * 60));
+    this.currentFrame += 1;
   }
 };
 
@@ -213,16 +214,19 @@ HelixPiEditor.Editor.onPress = function (keyCode) {
   }
 
   if (keyCode === Kiwi.Input.Keycodes.R) {
-    this.results = helixPi(this.createScenario(), this.api);
-    this.currentKeyFrame = 0;
-    this.currentFrame = 0;
-    this.loadPosition();
-    this.play = true;
-    this.codeToPlay = this.results[0].individual;
-    console.log(this.results[0].fitness);
+    this.createProgram();
   }
 };
 
 HelixPiEditor.Editor.droppedEntity = function ()  {
   this.savePosition();
+}
+
+HelixPiEditor.Editor.createProgram = function () {
+  this.results = helixPi(this.createScenario(), this.api);
+  this.currentKeyFrame = 0;
+  this.currentFrame = 0;
+  this.loadPosition();
+  this.play = true;
+  this.codeToPlay = this.results[0].individual;
 }
