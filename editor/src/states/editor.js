@@ -6,7 +6,14 @@ var HelixPiEditor = HelixPiEditor || {};
 HelixPiEditor.Editor = new Kiwi.State('Editor');
 
 HelixPiEditor.Editor.create = function () {
-  this.entity = new Kiwi.GameObjects.Sprite(this, this.textures.entity, 100, 100, true);
+  this.entity = new Kiwi.GameObjects.Sprite(
+    this,
+    this.textures.entity,
+    100,
+    100,
+    true
+  );
+
   this.addChild(this.entity);
   this.entity.input.enableDrag();
   this.entity.input.onDragStopped.add(this.droppedEntity, this);
@@ -45,6 +52,15 @@ HelixPiEditor.Editor.create = function () {
   );
   this.game.huds.defaultHUD.addWidget(this.prevKeyFrameButton);
   styleButton(this.prevKeyFrameButton);
+
+  this.createProgramButton = new Kiwi.HUD.Widget.Button(
+    this.game,
+    'Create Program',
+    this.game.stage.width - 250,
+    40
+  );
+  this.game.huds.defaultHUD.addWidget(this.createProgramButton);
+  styleButton(this.createProgramButton);
 
   this.nextKeyFrameButton.input.onDown.add(this.nextKeyFrame, this);
   this.prevKeyFrameButton.input.onDown.add(this.prevKeyFrame, this);
@@ -157,7 +173,9 @@ HelixPiEditor.Editor.updatePath = function () {
   this.line.destroy();
   this.line = new Kiwi.Plugins.Primitives.Line({
     state: this,
-    points: this.positions.slice(0, this.highestFrame + 1).map(function (position) { return [position.x, position.y]; }),
+    points: this.positions.slice(0, this.highestFrame + 1)
+      .map(function (position) { return [position.x, position.y]; }),
+
     strokeColor: [1, 1, 1],
     strokeWidth: 4
   });
