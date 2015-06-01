@@ -6,11 +6,27 @@ var HelixPiEditor = HelixPiEditor || {};
 HelixPiEditor.Play = new Kiwi.State('Play');
 
 var Actor = function (sprite, genes, api, fitness) {
+  var fitnessText = new Kiwi.GameObjects.TextField(
+    HelixPiEditor.Play,
+    Math.round(fitness),
+    sprite.x,
+    sprite.y + 15,
+    '#FFF',
+    15
+  );
+
+  fitnessText.textAlign = Kiwi.GameObjects.TextField.TEXT_ALIGN_CENTER;
+
+  HelixPiEditor.Play.addChild(fitnessText);
+
   return {
     play: function () {
       _.each(genes, function (gene) {
         gene(api);
       });
+
+      fitnessText.x = sprite.x + sprite.width / 2;
+      fitnessText.y = sprite.y + 130;
     }
   };
 };
