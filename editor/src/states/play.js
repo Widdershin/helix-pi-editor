@@ -27,14 +27,17 @@ var Actor = function (sprite, genes, api, fitness) {
 
       fitnessText.x = sprite.x + sprite.width / 2;
       fitnessText.y = sprite.y + 130;
+    },
+
+    moveTo: function (x, y) {
+      sprite.x = x; // TODO - fix hard coded start position
+      sprite.y = y;
     }
   };
 };
 
 HelixPiEditor.Play.create = function () {
-  this.currentKeyFrame = 0;
   this.currentFrame = 0;
-  this.play = true;
   this.compiledApi = HelixPiEditor.Editor.api(this.entity);
 
   this.game.huds.defaultHUD.removeAllWidgets();
@@ -43,9 +46,18 @@ HelixPiEditor.Play.create = function () {
     'Back to Editor',
     this.game.stage.width - 180,
     5
-  )
+  );
 
   backToEditorButton.input.onDown.add(this.backToEditor, this);
+
+  var restartButton = HelixPiEditor.buttons.create(
+    this,
+    'Restart',
+    this.game.stage.width - 360,
+    5
+  );
+
+  restartButton.input.onDown.add(this.restart, this);
 
   var that = this;
   this.actors = HelixPiEditor.results().map(function (result) {
@@ -75,4 +87,12 @@ HelixPiEditor.Play.update = function () {
 
 HelixPiEditor.Play.backToEditor = function () {
   this.game.states.switchState('Editor');
+}
+
+HelixPiEditor.Play.restart = function () {
+  this.currentFrame = 0;
+
+  _.each(this.actors, function (actor) {
+    actor.moveTo(100, 100);
+  });
 }
