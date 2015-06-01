@@ -204,6 +204,6 @@ HelixPiEditor.Editor.createProgram = function () {
 
 HelixPiEditor.Editor.playProgram = function () {
   this.createProgram();
-  HelixPiEditor.results(this.results.slice(0, 8));
+  HelixPiEditor.results(this.results.slice(0, 4));
   this.game.states.switchState('Play');
 };
