@@ -6,6 +6,8 @@ var HelixPiEditor = HelixPiEditor || {};
 HelixPiEditor.Editor = new Kiwi.State('Editor');
 
 HelixPiEditor.Editor.create = function () {
+  this.game.huds.defaultHUD.removeAllWidgets();
+
   this.entity = new Kiwi.GameObjects.Sprite(
     this,
     this.textures.entity,
@@ -29,13 +31,12 @@ HelixPiEditor.Editor.create = function () {
 
   this.currentFrame = 0;
   this.currentKeyFrame = 0;
-  this.highestFrame = 0;
 
-  this.positions = [];
+  this.positions = HelixPiEditor.scenarios();
   this.line = {destroy: function () {}};
+  this.updatePath();
   this.progressIndicator = {destroy: function () {}};
-
-  var that = this;
+  this.highestFrame = this.positions.length;
 
   this.prevKeyFrameButton = HelixPiEditor.buttons.create(
     this,
@@ -139,6 +140,8 @@ HelixPiEditor.Editor.savePosition = function () {
     x: this.entity.x + this.entity.width / 2,
     y: this.entity.y + this.entity.height / 2
   };
+
+  HelixPiEditor.scenarios(this.positions);
 
   this.updatePath();
 };

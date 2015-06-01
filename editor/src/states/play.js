@@ -29,6 +29,8 @@ HelixPiEditor.Play.create = function () {
     5
   )
 
+  backToEditorButton.input.onDown.add(this.backToEditor, this);
+
   var that = this;
   this.actors = HelixPiEditor.results().map(function (result) {
     var sprite = new Kiwi.GameObjects.Sprite(
@@ -55,3 +57,6 @@ HelixPiEditor.Play.update = function () {
   this.currentFrame += 1;
 };
 
+HelixPiEditor.Play.backToEditor = function () {
+  this.game.states.switchState('Editor');
+}
