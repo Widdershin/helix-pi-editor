@@ -25,7 +25,7 @@ HelixPiEditor.Play.create = function () {
   var backToEditorButton = HelixPiEditor.buttons.create(
     this,
     'Back to Editor',
-    180,
+    this.game.stage.width - 180,
     5
   )
 
