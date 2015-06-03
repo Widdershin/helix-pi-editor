@@ -63,22 +63,38 @@ HelixPiEditor.Editor.create = function () {
   this.prevKeyFrameButton.input.onDown.add(this.prevKeyFrame, this);
   this.playProgramButton.input.onDown.add(this.playProgram, this);
 
-  this.api = function (entity) {
-    return {
-      move: function (coordinates) {
+  this.api = function(entity, getButtonDown) {
+    var self = {
+      move(coordinates) {
         entity.x += coordinates.x;
         entity.y += coordinates.y;
       },
 
-      getPosition: function () {
-        return {
-          x: entity.x,
-          y: entity.y
-        };
-      }
-    };
-  };
+    }
 
+    function declareApiCall(options, f) {
+      f.takes = options.takes;
+      f.returns = options.returns;
+      return f;
+    }
+
+    self.checkButtonDown = declareApiCall({
+      takes: ['right', 'left'], 
+      returns: [true, false]
+    }, getButtonDown);
+
+    self.getPosition = declareApiCall({
+      takes: [],
+      returns: {x: 0, y: 0},
+    }, function () {
+      return {
+        x: entity.x,
+        y: entity.y
+      };
+    });
+
+    return self;
+  };
 };
 
 HelixPiEditor.Editor.update = function () {
@@ -120,6 +136,8 @@ HelixPiEditor.Editor.createScenario = function () {
       return expectedPosition;
     }),
 
+    input: [],
+
     fitness: function (expectedPosition, entity) {
       var distance = {
         x: Math.abs(expectedPosition.x - entity.x),
@@ -142,6 +160,7 @@ HelixPiEditor.Editor.savePosition = function () {
   };
 
   HelixPiEditor.scenarios(this.positions);
+  window.scenario = this.createScenario();
 
   this.updatePath();
 };
@@ -199,7 +218,7 @@ HelixPiEditor.Editor.droppedEntity = function () {
 };
 
 HelixPiEditor.Editor.createProgram = function () {
-  this.results = helixPi(this.createScenario(), this.api);
+  this.results = helixPi(window.scenario, this.api);
 };
 
 HelixPiEditor.Editor.playProgram = function () {

@@ -38,8 +38,6 @@ var Actor = function (sprite, genes, api, fitness) {
 
 HelixPiEditor.Play.create = function () {
   this.currentFrame = 0;
-  this.compiledApi = HelixPiEditor.Editor.api(this.entity);
-
   this.game.huds.defaultHUD.removeAllWidgets();
   var backToEditorButton = HelixPiEditor.buttons.create(
     this,
@@ -71,9 +69,14 @@ HelixPiEditor.Play.create = function () {
 
     that.addChild(sprite);
 
-    var compiledApi = HelixPiEditor.Editor.api(sprite);
+    var compiledApi = HelixPiEditor.Editor.api(sprite, that.checkButtonDown.bind(that));
     return new Actor(sprite, result.individual, compiledApi, result.fitness);
   });
+
+  this.keys = {
+    right: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D),
+    left: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A)
+  }
 };
 
 HelixPiEditor.Play.update = function () {
@@ -95,4 +98,8 @@ HelixPiEditor.Play.restart = function () {
   _.each(this.actors, function (actor) {
     actor.moveTo(100, 100);
   });
+}
+
+HelixPiEditor.Play.checkButtonDown = function (button) {
+  return this.keys[button].isDown;
 }
