@@ -63,14 +63,21 @@ HelixPiEditor.Editor.create = function () {
   this.prevKeyFrameButton.input.onDown.add(this.prevKeyFrame, this);
   this.playProgramButton.input.onDown.add(this.playProgram, this);
 
-  this.api = function(entity, getButtonDown) {
-    var self = {
-      move(coordinates) {
-        entity.x += coordinates.x;
-        entity.y += coordinates.y;
-      },
+  var timelineHeight = 60;
+  this.mouse = this.game.input.mouse;
 
-    }
+  this.timelineRectangle = new Kiwi.Plugins.Primitives.Rectangle({
+    state: this,
+    width: this.game.stage.width,
+    height: timelineHeight,
+    y: this.game.stage.height - timelineHeight,
+    color: [ 0.3, 0.3, 0.3 ]
+  });
+
+  this.addChild(this.timelineRectangle);
+
+  this.api = function (entity, getButtonDown) {
+    var self = {};
 
     function declareApiCall(options, f) {
       f.takes = options.takes;
@@ -78,14 +85,22 @@ HelixPiEditor.Editor.create = function () {
       return f;
     }
 
+    self.move = declareApiCall({
+      takes: {x: 0, y: 0},
+      returns: null
+    }, function (coordinates) {
+      entity.x += coordinates.x;
+      entity.y += coordinates.y;
+    });
+
     self.checkButtonDown = declareApiCall({
-      takes: ['right', 'left'], 
+      takes: ['right', 'left'],
       returns: [true, false]
     }, getButtonDown);
 
     self.getPosition = declareApiCall({
       takes: [],
-      returns: {x: 0, y: 0},
+      returns: {x: 0, y: 0}
     }, function () {
       return {
         x: entity.x,
@@ -102,6 +117,11 @@ HelixPiEditor.Editor.update = function () {
 
   this.frameText.text = ['Frame: ', this.currentKeyFrame].join('');
 
+  if (this.mouse.isDown && this.mouse.y >= this.timelineRectangle.y) {
+    var timelineRatio = this.mouse.x / this.game.stage.width;
+
+    this.moveEntityInTime(timelineRatio);
+  }
 };
 
 HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
@@ -130,12 +150,7 @@ HelixPiEditor.Editor.createScenario = function () {
       return JSON.parse(JSON.stringify(startPosition));
     },
 
-    expectedPositions: expectedPositions.map(function (expectedPosition, index) {
-      expectedPosition.frame = index * 60;
-
-      return expectedPosition;
-    }),
-
+    expectedPositions: expectedPositions,
     input: [],
 
     fitness: function (expectedPosition, entity) {
@@ -156,7 +171,8 @@ HelixPiEditor.Editor.savePosition = function () {
 
   this.positions[this.currentKeyFrame] = {
     x: this.entity.x + this.entity.width / 2,
-    y: this.entity.y + this.entity.height / 2
+    y: this.entity.y + this.entity.height / 2,
+    frame: this.currentKeyFrame * 60
   };
 
   HelixPiEditor.scenarios(this.positions);
@@ -225,4 +241,53 @@ HelixPiEditor.Editor.playProgram = function () {
   this.createProgram();
   HelixPiEditor.results(this.results.slice(0, 4));
   this.game.states.switchState('Play');
+};
+
+HelixPiEditor.Editor.moveEntityInTime = function (ratio) {
+  var lerp = function (startPosition, endPosition, ratio) {
+    return {
+      x: startPosition.x + (endPosition.x - startPosition.x) * ratio,
+      y: startPosition.y + (endPosition.y - startPosition.y) * ratio
+    };
+  };
+
+  var getPositionAt = function (positions, ratio) {
+    var totalFrames = _.last(positions).frame;
+    var frameToFind = totalFrames * ratio;
+
+    if (frameToFind > totalFrames) {
+      return false;
+    }
+
+    // ugh a for loop
+    // TODO - make this functional and nice
+    for (var positionIndex = 0; positionIndex < positions.length; positionIndex++) {
+      var position = positions[positionIndex];
+      var nextPosition = positions[positionIndex + 1];
+
+      if (nextPosition === undefined) {
+        continue;
+      }
+
+      if (frameToFind >= position.frame && frameToFind < nextPosition.frame) {
+        // if you read this code I am a bit sorry
+        var startPositionRatio = position.frame / totalFrames;
+        var nextPositionRatio = nextPosition.frame / totalFrames;
+
+        var duration = nextPositionRatio - startPositionRatio;
+
+        return lerp(position, nextPosition, (ratio - startPositionRatio) / duration);
+      }
+    }
+
+    return false;
+  };
+
+  var newPosition = getPositionAt(this.positions, ratio);
+
+  // TODO - make entity centered
+  if (newPosition) {
+    this.entity.x = newPosition.x - this.entity.width / 2;
+    this.entity.y = newPosition.y - this.entity.height / 2;
+  }
 };
