@@ -35,5 +35,8 @@
     "preinstall": "npm run bundle",
     "start": "./node_modules/.bin/babel-node ./index.js",
     "bundle": "cat bundle.js | ./node_modules/.bin/browserify - | ./node_modules/.bin/babel -o public/bundle.js"
+  },
+  "engines": {
+    "node": "0.10.x"
   }
 }
