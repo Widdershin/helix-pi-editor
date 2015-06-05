@@ -38,5 +38,9 @@
   },
   "engines": {
     "node": "0.10.x"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/widdershin/helix-pi-editor.git"
   }
 }
