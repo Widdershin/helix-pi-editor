@@ -32,7 +32,7 @@
     "grunt-contrib-uglify": "0.2.x"
   },
   "scripts": {
-    "preinstall": "npm run bundle",
+    "postinstall": "npm run bundle",
     "start": "./node_modules/.bin/babel-node ./index.js",
     "bundle": "cat bundle.js | browserify - | babel -o public/bundle.js"
   },
