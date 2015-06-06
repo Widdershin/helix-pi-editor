@@ -38,16 +38,9 @@ HelixPiEditor.Editor.create = function () {
   this.progressIndicator = {destroy: function () {}};
   this.highestFrame = this.positions.length;
 
-  this.prevKeyFrameButton = HelixPiEditor.buttons.create(
+  this.addKeyFrameButton = HelixPiEditor.buttons.create(
     this,
-    'Prev Keyframe',
-    this.game.stage.width - 250,
-    5
-  );
-
-  this.nextKeyFrameButton = HelixPiEditor.buttons.create(
-    this,
-    'Next Keyframe',
+    'Add 60 frames',
     this.game.stage.width - 130,
     5
   );
@@ -55,15 +48,16 @@ HelixPiEditor.Editor.create = function () {
   this.playProgramButton = HelixPiEditor.buttons.create(
     this,
     'Play Program',
-    this.game.stage.width - 250,
-    35
+    this.game.stage.width - 130,
+    45
   );
 
-  this.nextKeyFrameButton.input.onDown.add(this.nextKeyFrame, this);
-  this.prevKeyFrameButton.input.onDown.add(this.prevKeyFrame, this);
+  this.addKeyFrameButton.input.onDown.add(this.addKeyFrame, this);
   this.playProgramButton.input.onDown.add(this.playProgram, this);
 
   this.timeline = HelixPiEditor.timeline(this);
+
+  this.savePosition();
 
   this.api = function (entity, getButtonDown) {
     var self = {};
@@ -104,14 +98,21 @@ HelixPiEditor.Editor.create = function () {
 HelixPiEditor.Editor.update = function () {
   Kiwi.State.prototype.update.call(this);
 
-  this.frameText.text = ['Frame: ', this.currentKeyFrame].join('');
+  this.frameText.text = ['Frame: ', this.currentFrame].join('');
 
   this.timeline.onClick(this.handleTimelineClick.bind(this));
 };
 
 HelixPiEditor.Editor.handleTimelineClick = function (ratio) {
+  this.currentFrame = Math.round(this.lastFrame() * ratio);
   this.displayProgressIndicator(ratio);
   this.moveEntityInTime(ratio);
+}
+
+HelixPiEditor.Editor.lastFrame = function () {
+  var lastPosition = _.last(HelixPiEditor.scenarios());
+
+  return lastPosition && lastPosition.frame;
 }
 
 HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
@@ -133,7 +134,7 @@ HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
 
 HelixPiEditor.Editor.createScenario = function () {
   var startPosition = this.positions[0];
-  var expectedPositions = this.positions.slice(1, this.highestFrame + 1);
+  var expectedPositions = this.positions.slice(1);
 
   return {
     startingPosition: function () {
@@ -155,15 +156,26 @@ HelixPiEditor.Editor.createScenario = function () {
 };
 
 HelixPiEditor.Editor.savePosition = function () {
-  if (this.currentKeyFrame > this.highestFrame) {
-    this.highestFrame = this.currentKeyFrame;
-  }
-
-  this.positions[this.currentKeyFrame] = {
+  this.createPosition({
     x: this.entity.x + this.entity.width / 2,
     y: this.entity.y + this.entity.height / 2,
-    frame: this.currentKeyFrame * 60
-  };
+    frame: this.currentFrame,
+  });
+};
+
+HelixPiEditor.Editor.createPosition = function (position) {
+  var existingPositionForFrameIndex = this.positions.findIndex(function (existingPosition) {
+    return existingPosition.frame == position.frame;
+  });
+
+  if (existingPositionForFrameIndex != -1) {
+    this.positions.splice(existingPositionForFrameIndex, 1);
+  }
+
+  this.positions.push(position);
+  this.positions = this.positions.sort(function (a, b) {
+    return a.frame > b.frame;
+  });
 
   HelixPiEditor.scenarios(this.positions);
   window.scenario = this.createScenario();
@@ -175,7 +187,7 @@ HelixPiEditor.Editor.updatePath = function () {
   this.line.destroy();
   this.line = new Kiwi.Plugins.Primitives.Line({
     state: this,
-    points: this.positions.slice(0, this.highestFrame + 1)
+    points: this.positions
       .map(function (position) { return [position.x, position.y]; }),
 
     strokeColor: [1, 1, 1],
@@ -184,36 +196,11 @@ HelixPiEditor.Editor.updatePath = function () {
   this.addChild(this.line);
 };
 
-HelixPiEditor.Editor.loadPosition = function () {
-  if (!this.positions[this.currentKeyFrame]) {
-    return;
-  }
-
-  this.entity.x = this.positions[this.currentKeyFrame].x - this.entity.width / 2;
-  this.entity.y = this.positions[this.currentKeyFrame].y - this.entity.height / 2;
-};
-
-HelixPiEditor.Editor.nextKeyFrame = function () {
-  this.savePosition();
-  this.currentKeyFrame += 1;
-  this.loadPosition();
-};
-
-HelixPiEditor.Editor.prevKeyFrame = function () {
-  this.savePosition();
-  this.currentKeyFrame -= 1;
-  this.loadPosition();
+HelixPiEditor.Editor.addKeyFrame = function () {
+  this.currentFrame += 60;
 };
 
 HelixPiEditor.Editor.onPress = function (keyCode) {
-  if (keyCode === Kiwi.Input.Keycodes.RIGHT) {
-    this.nextKeyFrame();
-  }
-
-  if (keyCode === Kiwi.Input.Keycodes.LEFT) {
-    this.prevKeyFrame();
-  }
-
   if (keyCode === Kiwi.Input.Keycodes.R) {
     this.createProgram();
   }
