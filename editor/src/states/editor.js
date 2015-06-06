@@ -25,6 +25,10 @@ HelixPiEditor.Editor.create = function () {
     this
   );
 
+  this.mouse = this.game.input.mouse;
+  this.mouse.onDown.add(this.handleClick, this);
+  this.mouse.onUp.add(this.handleClickRelease, this);
+
   this.frameText = new Kiwi.GameObjects.TextField(this, 'test', 10, 10, '#FFF');
 
   this.addChild(this.frameText);
@@ -52,12 +56,24 @@ HelixPiEditor.Editor.create = function () {
     45
   );
 
+  this.addInputButton = HelixPiEditor.buttons.create(
+    this,
+    'Add input',
+    5,
+    this.game.stage.height - 130
+  );
+
   this.addKeyFrameButton.input.onDown.add(this.addKeyFrame, this);
   this.playProgramButton.input.onDown.add(this.playProgram, this);
+  this.addInputButton.input.onDown.add(this.addInput, this);
 
   this.timeline = HelixPiEditor.timeline(this);
 
   this.savePosition();
+
+  this.addingInput = false;
+  this.input = this.input || [];
+  this.input.forEach(this.renderInput.bind(this));
 
   this.api = function (entity, getButtonDown) {
     var self = {};
@@ -144,7 +160,7 @@ HelixPiEditor.Editor.createScenario = function () {
     },
 
     expectedPositions: expectedPositions,
-    input: [],
+    input: this.input,
 
     fitness: function (expectedPosition, entity) {
       var distance = {
@@ -270,3 +286,61 @@ HelixPiEditor.Editor.moveEntityInTime = function (ratio) {
     this.entity.y = newPosition.y - this.entity.height / 2;
   }
 };
+
+HelixPiEditor.Editor.addInput = function () {
+  this.addingInput = true;
+  this.firstClickAfterAddingInput = true; // TODO - WOW SUC HACK
+}
+
+HelixPiEditor.Editor.handleClick = function () {
+  if (this.addingInput && !this.firstClickAfterAddingInput) {
+    this.inputStartX = this.mouse.x;
+  }
+}
+
+HelixPiEditor.Editor.handleClickRelease = function () {
+  if (this.addingInput) {
+    if (this.firstClickAfterAddingInput) {
+      this.firstClickAfterAddingInput = false;
+      return;
+    }
+
+    this.addingInput = false;
+    this.createInput(
+      this.inputStartX,
+      this.mouse.x,
+      prompt('Key?')
+    );
+  }
+}
+
+HelixPiEditor.Editor.createInput = function (startX, endX, key) {
+  var totalFrames = this.lastFrame();
+
+  var input = {
+    startFrame: totalFrames * startX / this.game.stage.width,
+    endFrame: totalFrames * endX / this.game.stage.width,
+    key: key,
+    startX: startX,
+    endX: endX
+  };
+
+  this.input.push(input);
+  this.renderInput(input);
+}
+
+HelixPiEditor.Editor.renderInput = function(input) {
+  var newInput = new Kiwi.Plugins.Primitives.Rectangle({
+    state: this,
+    x: input.startX,
+    y: this.game.stage.height - 100,
+    width: input.endX - input.startX,
+    height: 30,
+    color: [0.5, 0.5, 0.5],
+  })
+
+  this.frameText = new Kiwi.GameObjects.TextField(this, 'test', 10, 10, '#FFF');
+  this.addChild(newInput);
+  var text = new Kiwi.GameObjects.TextField(this, input.key, newInput.x + 5, newInput.y + 5, '#FFF');
+  this.addChild(text);
+}
