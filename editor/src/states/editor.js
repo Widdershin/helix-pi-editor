@@ -100,13 +100,15 @@ HelixPiEditor.Editor.update = function () {
 
   this.frameText.text = ['Frame: ', this.currentFrame].join('');
 
-  this.timeline.onClick(this.handleTimelineClick.bind(this));
+  this.timeline.tick(this.handleTimelineTick.bind(this));
 };
 
-HelixPiEditor.Editor.handleTimelineClick = function (ratio) {
+HelixPiEditor.Editor.handleTimelineTick = function (ratio, updateCharacterPosition) {
   this.currentFrame = Math.round(this.lastFrame() * ratio);
   this.displayProgressIndicator(ratio);
-  this.moveEntityInTime(ratio);
+  if (updateCharacterPosition) {
+    this.moveEntityInTime(ratio);
+  };
 }
 
 HelixPiEditor.Editor.lastFrame = function () {

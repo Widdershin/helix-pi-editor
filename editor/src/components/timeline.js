@@ -21,42 +21,64 @@ var HelixPiEditor = HelixPiEditor || {};
     state.addChild(timelineRectangle);
 
     var keyFrameLines = [];
+    var draggingFrame;
+
+    function createKeyFrameLine (totalFrames, scenario) {
+      var width = 16;
+      var newX = (state.game.stage.width * scenario.frame / totalFrames) - width / 2;
+      var keyFrameLine = new Kiwi.Plugins.Primitives.Rectangle({
+        state: state,
+        width: width,
+        height: timelineHeight - 10,
+        x: newX,
+        y: state.game.stage.height - timelineHeight,
+        color: [0.8, 0.8, 0.8],
+        enableInput: true,
+      });
+
+      keyFrameLine.input.enableDrag();
+      keyFrameLine.input.onDragStarted.add(function () {
+        draggingFrame = keyFrameLine;
+      })
+
+      keyFrameLine.scenario = scenario;
+
+      keyFrameLine.input.onDragStopped.add(function () {
+        draggingFrame = null;
+        keyFrameLine.scenario.frame = Math.round(totalFrames * keyFrameLine.x / state.game.stage.width);
+      });
+
+      state.addChild(keyFrameLine);
+
+      return keyFrameLine;
+    }
 
     function drawKeyFrameLines () {
       var lastScenario = _.last(HelixPiEditor.scenarios());
       var totalFrames = (lastScenario && lastScenario.frame);
+
       HelixPiEditor.scenarios().forEach(function (scenario, index) {
+        var newX = (state.game.stage.width * scenario.frame / totalFrames) - 8;
         var keyFrameLine = keyFrameLines[index];
-
-        var newX = (state.game.stage.width * scenario.frame / totalFrames) - 2;
-
         if (keyFrameLine === undefined) {
-          keyFrameLine = new Kiwi.Plugins.Primitives.Rectangle({
-            state: state,
-            width: 5,
-            height: timelineHeight - 10,
-            x: newX,
-            y: state.game.stage.height - timelineHeight,
-            color: [0.8, 0.8, 0.8],
-            enableInput: true,
-          });
-
-          keyFrameLine.input.onDragStopped.add(function () {
-            alert('clicked a keyframe');
-          })
-
-          state.addChild(keyFrameLine);
-
+          keyFrameLine = createKeyFrameLine(totalFrames, scenario);
           keyFrameLines[index] = keyFrameLine;
         } else {
-          keyFrameLine.x = newX;
+          keyFrameLine.scenario = scenario;
+
+          if (draggingFrame != keyFrameLine) {
+            keyFrameLine.x = newX;
+            keyFrameLine.y = state.game.stage.height - timelineHeight;
+          } else {
+            keyFrameLine.y = state.game.stage.height - timelineHeight;
+          }
         }
       });
     };
 
-    self.onClick = function(callback) {
+    self.tick = function(callback) {
       if (mouse.isDown && mouse.y >= timelineRectangle.y) {
-        callback(mouse.x / game.stage.width);
+        callback(mouse.x / game.stage.width, !draggingFrame);
       }
 
       drawKeyFrameLines();
