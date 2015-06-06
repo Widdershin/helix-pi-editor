@@ -106,8 +106,13 @@ HelixPiEditor.Editor.update = function () {
 
   this.frameText.text = ['Frame: ', this.currentKeyFrame].join('');
 
-  this.timeline.onClick(this.moveEntityInTime.bind(this));
+  this.timeline.onClick(this.handleTimelineClick.bind(this));
 };
+
+HelixPiEditor.Editor.handleTimelineClick = function (ratio) {
+  this.displayProgressIndicator(ratio);
+  this.moveEntityInTime(ratio);
+}
 
 HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
   var indicatorHeight = 60;
