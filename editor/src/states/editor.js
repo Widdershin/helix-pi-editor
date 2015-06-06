@@ -63,18 +63,7 @@ HelixPiEditor.Editor.create = function () {
   this.prevKeyFrameButton.input.onDown.add(this.prevKeyFrame, this);
   this.playProgramButton.input.onDown.add(this.playProgram, this);
 
-  var timelineHeight = 60;
-  this.mouse = this.game.input.mouse;
-
-  this.timelineRectangle = new Kiwi.Plugins.Primitives.Rectangle({
-    state: this,
-    width: this.game.stage.width,
-    height: timelineHeight,
-    y: this.game.stage.height - timelineHeight,
-    color: [ 0.3, 0.3, 0.3 ]
-  });
-
-  this.addChild(this.timelineRectangle);
+  this.timeline = HelixPiEditor.timeline(this);
 
   this.api = function (entity, getButtonDown) {
     var self = {};
@@ -117,11 +106,7 @@ HelixPiEditor.Editor.update = function () {
 
   this.frameText.text = ['Frame: ', this.currentKeyFrame].join('');
 
-  if (this.mouse.isDown && this.mouse.y >= this.timelineRectangle.y) {
-    var timelineRatio = this.mouse.x / this.game.stage.width;
-
-    this.moveEntityInTime(timelineRatio);
-  }
+  this.timeline.onClick(this.moveEntityInTime.bind(this));
 };
 
 HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
