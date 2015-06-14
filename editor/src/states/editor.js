@@ -155,12 +155,16 @@ HelixPiEditor.Editor.createScenario = function () {
   var expectedPositions = this.positions.slice(1);
 
   return {
-    startingPosition: function () {
-      return JSON.parse(JSON.stringify(startPosition));
-    },
+    scenarios: [
+      {
+        startingPosition: function () {
+          return JSON.parse(JSON.stringify(startPosition));
+        },
 
-    expectedPositions: expectedPositions,
-    input: this.input,
+        expectedPositions: expectedPositions,
+        input: this.input
+      }
+    ],
 
     fitness: function (expectedPosition, entity) {
       var distance = {
