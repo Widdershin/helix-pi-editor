@@ -23,9 +23,9 @@ var HelixPiEditor = HelixPiEditor || {};
     var keyFrameLines = [];
     var draggingFrame;
 
-    function createKeyFrameLine (totalFrames, scenario) {
+    function createKeyFrameLine (totalFrames, keyPosition) {
       var width = 16;
-      var newX = (state.game.stage.width * scenario.frame / totalFrames) - width / 2;
+      var newX = (state.game.stage.width * keyPosition.frame / totalFrames) - width / 2;
       var keyFrameLine = new Kiwi.Plugins.Primitives.Rectangle({
         state: state,
         width: width,
@@ -41,11 +41,11 @@ var HelixPiEditor = HelixPiEditor || {};
         draggingFrame = keyFrameLine;
       })
 
-      keyFrameLine.scenario = scenario;
+      keyFrameLine.keyPosition = keyPosition;
 
       keyFrameLine.input.onDragStopped.add(function () {
         draggingFrame = null;
-        keyFrameLine.scenario.frame = Math.round(totalFrames * keyFrameLine.x / state.game.stage.width);
+        keyFrameLine.keyPosition.frame = Math.round(totalFrames * keyFrameLine.x / state.game.stage.width);
       });
 
       state.addChild(keyFrameLine);
@@ -54,17 +54,17 @@ var HelixPiEditor = HelixPiEditor || {};
     }
 
     function drawKeyFrameLines () {
-      var lastScenario = _.last(HelixPiEditor.scenarios());
-      var totalFrames = (lastScenario && lastScenario.frame);
+      var lastPosition = _.last(HelixPiEditor.Editor.positions);
+      var totalFrames = (lastPosition && lastPosition.frame);
 
-      HelixPiEditor.scenarios().forEach(function (scenario, index) {
-        var newX = (state.game.stage.width * scenario.frame / totalFrames) - 8;
+      HelixPiEditor.Editor.positions.forEach(function (position, index) {
+        var newX = (state.game.stage.width * position.frame / totalFrames) - 8;
         var keyFrameLine = keyFrameLines[index];
         if (keyFrameLine === undefined) {
-          keyFrameLine = createKeyFrameLine(totalFrames, scenario);
+          keyFrameLine = createKeyFrameLine(totalFrames, position);
           keyFrameLines[index] = keyFrameLine;
         } else {
-          keyFrameLine.scenario = scenario;
+          keyFrameLine.position = position;
 
           if (draggingFrame != keyFrameLine) {
             keyFrameLine.x = newX;
@@ -75,6 +75,7 @@ var HelixPiEditor = HelixPiEditor || {};
         }
       });
     };
+  
 
     self.tick = function(callback) {
       if (mouse.isDown && mouse.y >= timelineRectangle.y) {

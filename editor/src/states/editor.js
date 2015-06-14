@@ -8,6 +8,8 @@ HelixPiEditor.Editor = new Kiwi.State('Editor');
 HelixPiEditor.Editor.create = function () {
   this.game.huds.defaultHUD.removeAllWidgets();
 
+  this.timeline = HelixPiEditor.timeline(this);
+
   this.entity = new Kiwi.GameObjects.Sprite(
     this,
     this.textures.entity,
@@ -36,9 +38,50 @@ HelixPiEditor.Editor.create = function () {
   this.currentFrame = 0;
   this.currentKeyFrame = 0;
 
-  this.positions = HelixPiEditor.scenarios();
-  this.line = {destroy: function () {}};
-  this.updatePath();
+  this.scenarios = HelixPiEditor.scenarios();
+
+  this.addScenarioButton = HelixPiEditor.buttons.create(
+    this,
+    'Add Scenario',
+    5,
+    55
+  );
+
+  this.addScenarioButton.input.onDown.add(this.addScenario, this);
+
+  this.scenarioButtons = [];
+
+  this.progressIndicator = new Kiwi.Plugins.Primitives.Line({
+    state: this,
+    points: [
+      [0, this.game.stage.height - 60],
+      [0, this.game.stage.height]
+    ],
+    strokeColor: [1, 1, 1],
+    strokeWidth: 4
+  });
+
+  this.addChild(this.progressIndicator);
+
+  this.line = new Kiwi.Plugins.Primitives.Line({
+    state: this,
+    points: [],
+
+    strokeColor: [1, 1, 1],
+    strokeWidth: 4
+  });
+  this.addChild(this.line);
+  
+  if (this.scenarios.length === 0) {
+    this.addScenario();
+  } else {
+    this.scenarios.forEach(function (scenario, index) {
+      this.createScenarioButton(index);
+    }.bind(this));
+
+    this.loadScenario(0);
+  };
+
   this.progressIndicator = {destroy: function () {}};
   this.highestFrame = this.positions.length;
 
@@ -67,9 +110,6 @@ HelixPiEditor.Editor.create = function () {
   this.playProgramButton.input.onDown.add(this.playProgram, this);
   this.addInputButton.input.onDown.add(this.addInput, this);
 
-  this.timeline = HelixPiEditor.timeline(this);
-
-  this.savePosition();
 
   this.addingInput = false;
   this.input = this.input || [];
@@ -128,43 +168,38 @@ HelixPiEditor.Editor.handleTimelineTick = function (ratio, updateCharacterPositi
 }
 
 HelixPiEditor.Editor.lastFrame = function () {
-  var lastPosition = _.last(HelixPiEditor.scenarios());
+  var lastPosition = _.last(this.positions);
 
   return lastPosition && lastPosition.frame;
 }
 
 HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
   var indicatorHeight = 60;
-  this.progressIndicator.destroy();
 
-  this.progressIndicator = new Kiwi.Plugins.Primitives.Line({
-    state: this,
-    points: [
-      [this.game.stage.width * progress, this.game.stage.height - indicatorHeight],
-      [this.game.stage.width * progress, this.game.stage.height]
-    ],
-    strokeColor: [1, 1, 1],
-    strokeWidth: 4
-  });
+  this.progressIndicator.points = [
+    [this.game.stage.width * progress, this.game.stage.height - indicatorHeight],
+    [this.game.stage.width * progress, this.game.stage.height]
+  ];
 
-  this.addChild(this.progressIndicator);
 };
 
 HelixPiEditor.Editor.createScenario = function () {
-  var startPosition = this.positions[0];
-  var expectedPositions = this.positions.slice(1);
-
   return {
-    scenarios: [
-      {
+    scenarios: this.scenarios.map(function (scenario) {
+      var positions = scenario.positions;
+      var startPosition = positions[0];
+      var expectedPositions = positions.slice(1);
+      var input = scenario.input;
+
+      return {
         startingPosition: function () {
           return JSON.parse(JSON.stringify(startPosition));
         },
 
         expectedPositions: expectedPositions,
-        input: this.input
-      }
-    ],
+        input: input
+      };
+    }),
 
     fitness: function (expectedPosition, entity) {
       var distance = {
@@ -199,9 +234,6 @@ HelixPiEditor.Editor.createPosition = function (position) {
     return a.frame > b.frame;
   });
 
-  HelixPiEditor.scenarios(this.positions);
-  window.scenario = this.createScenario();
-
   this.updatePath();
 };
 
@@ -233,7 +265,7 @@ HelixPiEditor.Editor.droppedEntity = function () {
 };
 
 HelixPiEditor.Editor.createProgram = function () {
-  this.results = helixPi(window.scenario, this.api);
+  this.results = helixPi(this.createScenario(), this.api);
 };
 
 HelixPiEditor.Editor.playProgram = function () {
@@ -249,6 +281,12 @@ HelixPiEditor.Editor.moveEntityInTime = function (ratio) {
       y: startPosition.y + (endPosition.y - startPosition.y) * ratio
     };
   };
+
+  var firstPosition = _.first(this.positions); 
+  if (ratio === 0 && firstPosition) {
+    this.entity.x = firstPosition.x - this.entity.width / 2;
+    this.entity.y = firstPosition.y - this.entity.height / 2;
+  }
 
   var getPositionAt = function (positions, ratio) {
     var totalFrames = _.last(positions).frame;
@@ -348,3 +386,66 @@ HelixPiEditor.Editor.renderInput = function(input) {
   var text = new Kiwi.GameObjects.TextField(this, input.key, newInput.x + 5, newInput.y + 5, '#FFF');
   this.addChild(text);
 }
+
+HelixPiEditor.Editor.addScenario = function () {
+  var newScenario = {
+    positions: [
+      {
+        x: 100,
+        y: 100,
+        frame: 0
+      }
+    ],
+    
+    input: [
+    ],
+  }
+
+  this.scenarios.push(newScenario);
+  HelixPiEditor.scenarios(this.scenarios);
+
+  var scenarioIndex = this.scenarios.length - 1;
+
+  this.createScenarioButton(scenarioIndex);
+
+  this.loadScenario(scenarioIndex);
+};
+
+HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
+  this.positions = this.scenarios[scenarioIndex].positions;
+  this.input = this.scenarios[scenarioIndex].input;
+  this.handleTimelineTick(0, true);
+  this.reflowScenarioButtons();
+  this.updatePath();
+}
+
+HelixPiEditor.Editor.reflowScenarioButtons = function () {
+  var yOffset = 55;
+  var yDistance = 40;
+
+  this.scenarioButtons.forEach(function (button, index) {
+    button.x = 5;
+    button.y = index + yOffset + index * yDistance;
+  });
+
+  if (this.scenarioButtons.length === 0) {
+    this.addScenarioButton.y = yOffset;
+  } else {
+    this.addScenarioButton.y = _.last(this.scenarioButtons).y + yDistance;
+  }
+}
+
+HelixPiEditor.Editor.createScenarioButton = function (scenarioIndex) {
+  var newScenarioButton = HelixPiEditor.buttons.create(
+    this,
+    'Scenario #' + (scenarioIndex + 1),
+    5,
+    55
+  );
+
+  newScenarioButton.input.onDown.add(function () {
+    this.loadScenario(scenarioIndex); // Oh yeah sweet potential off by one error
+  }.bind(this));
+
+  this.scenarioButtons.push(newScenarioButton);
+};
