@@ -462,6 +462,15 @@ HelixPiEditor.Editor.addScenario = function () {
 };
 
 HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
+  this.line.destroy();
+  this.line = {destroy: function () {}};
+
+  this.participants.forEach(function (participant) {
+    participant.gameObject.destroy();
+  });
+
+  this.participants = [];
+
   var scenario = this.scenarios[scenarioIndex];
   this.positions = scenario.positions;
   this.input = scenario.input;
