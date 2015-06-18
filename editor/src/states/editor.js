@@ -247,14 +247,14 @@ HelixPiEditor.Editor.createPosition = function (position) {
     return a.frame > b.frame;
   });
 
-  //this.updatePath();
+  this.updatePath(position.participant);
 };
 
-HelixPiEditor.Editor.updatePath = function () {
+HelixPiEditor.Editor.updatePath = function (participant) {
   this.line.destroy();
   this.line = new Kiwi.Plugins.Primitives.Line({
     state: this,
-    points: this.positions
+    points: this.positions[participant.name]
       .map(function (position) { return [position.x, position.y]; }),
 
     strokeColor: [1, 1, 1],
@@ -275,6 +275,7 @@ HelixPiEditor.Editor.onPress = function (keyCode) {
 
 HelixPiEditor.Editor.droppedEntity = function (participant) {
   this.savePosition(participant);
+  this.updatePath(participant);
 };
 
 HelixPiEditor.Editor.createProgram = function () {
@@ -467,7 +468,6 @@ HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
   scenario.participants.forEach(this.addParticipant.bind(this));
   this.handleTimelineTick(0, true);
   this.reflowScenarioButtons();
-  //this.updatePath();
 };
 
 HelixPiEditor.Editor.reflowScenarioButtons = function () {
