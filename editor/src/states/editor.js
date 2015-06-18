@@ -158,11 +158,11 @@ HelixPiEditor.Editor.handleTimelineTick = function (ratio, updateCharacterPositi
 }
 
 HelixPiEditor.Editor.lastFrame = function () {
-  var participant = _.first(this.participants);
-  var lastPosition = _.last(this.positions[participant.name]);
-
-  return lastPosition && lastPosition.frame;
-}
+  return _.chain(this.positions)
+    .map(function(positions, participant) {
+      return _.last(positions).frame;
+    }).max().value();
+};
 
 HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
   var indicatorHeight = 60;
@@ -306,8 +306,9 @@ HelixPiEditor.Editor.moveEntityInTime = function (participant, ratio) {
     participantGameObject.y = firstPosition.y - participantGameObject.height / 2;
   }
 
+  var that = this;
   var getPositionAt = function (positions, ratio) {
-    var totalFrames = _.last(positions).frame;
+    var totalFrames = that.lastFrame();
     var frameToFind = totalFrames * ratio;
 
     if (frameToFind > totalFrames) {

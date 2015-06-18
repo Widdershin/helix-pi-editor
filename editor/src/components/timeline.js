@@ -77,7 +77,6 @@ var HelixPiEditor = HelixPiEditor || {};
       });
     };
 
-
     self.tick = function(callback) {
       if (mouse.isDown && mouse.y >= timelineRectangle.y) {
         callback(mouse.x / game.stage.width, !draggingFrame);
