@@ -63,7 +63,7 @@ HelixPiEditor.Play.create = function () {
   this.actors = HelixPiEditor.results().map(function (result) {
     var sprite = new Kiwi.GameObjects.Sprite(
       that,
-      that.textures.entity,
+      that.textures.paddle,
       startingPosition.x,
       startingPosition.y,
       true

@@ -10,17 +10,8 @@ HelixPiEditor.Editor.create = function () {
 
   this.timeline = HelixPiEditor.timeline(this);
 
-  this.entity = new Kiwi.GameObjects.Sprite(
-    this,
-    this.textures.entity,
-    100,
-    100,
-    true
-  );
 
-  this.addChild(this.entity);
-  this.entity.input.enableDrag();
-  this.entity.input.onDragStopped.add(this.droppedEntity, this);
+  this.participants = [];
 
   this.game.input.keyboard.onKeyDown.add(
     this.onPress,
@@ -83,7 +74,6 @@ HelixPiEditor.Editor.create = function () {
   };
 
   this.progressIndicator = {destroy: function () {}};
-  this.highestFrame = this.positions.length;
 
   this.addKeyFrameButton = HelixPiEditor.buttons.create(
     this,
@@ -163,12 +153,13 @@ HelixPiEditor.Editor.handleTimelineTick = function (ratio, updateCharacterPositi
   this.currentFrame = Math.round(this.lastFrame() * ratio);
   this.displayProgressIndicator(ratio);
   if (updateCharacterPosition) {
-    this.moveEntityInTime(ratio);
+    this.participants.forEach(function(participant) { this.moveEntityInTime(participant, ratio) }.bind(this));
   };
 }
 
 HelixPiEditor.Editor.lastFrame = function () {
-  var lastPosition = _.last(this.positions);
+  var participant = _.first(this.participants);
+  var lastPosition = _.last(this.positions[participant.name]);
 
   return lastPosition && lastPosition.frame;
 }
@@ -212,29 +203,33 @@ HelixPiEditor.Editor.createScenario = function () {
   };
 };
 
-HelixPiEditor.Editor.savePosition = function () {
+HelixPiEditor.Editor.savePosition = function (participant) {
+  var participantGameObject = this.findParticipant(participant.name).gameObject;
+
   this.createPosition({
-    x: this.entity.x + this.entity.width / 2,
-    y: this.entity.y + this.entity.height / 2,
+    participant: participant,
+    x: participantGameObject.x + participantGameObject.width / 2,
+    y: participantGameObject.y + participantGameObject.height / 2,
     frame: this.currentFrame,
   });
 };
 
 HelixPiEditor.Editor.createPosition = function (position) {
-  var existingPositionForFrameIndex = this.positions.findIndex(function (existingPosition) {
+  var participantPositions = this.positions[position.participant.name];
+  var existingPositionForFrameIndex = participantPositions.findIndex(function (existingPosition) {
     return existingPosition.frame == position.frame;
   });
 
   if (existingPositionForFrameIndex != -1) {
-    this.positions.splice(existingPositionForFrameIndex, 1);
+    participantPositions.splice(existingPositionForFrameIndex, 1);
   }
 
-  this.positions.push(position);
-  this.positions = this.positions.sort(function (a, b) {
+  participantPositions.push(position);
+  participantPositions = participantPositions.sort(function (a, b) {
     return a.frame > b.frame;
   });
 
-  this.updatePath();
+  //this.updatePath();
 };
 
 HelixPiEditor.Editor.updatePath = function () {
@@ -260,8 +255,8 @@ HelixPiEditor.Editor.onPress = function (keyCode) {
   }
 };
 
-HelixPiEditor.Editor.droppedEntity = function () {
-  this.savePosition();
+HelixPiEditor.Editor.droppedEntity = function (participant) {
+  this.savePosition(participant);
 };
 
 HelixPiEditor.Editor.createProgram = function () {
@@ -276,7 +271,8 @@ HelixPiEditor.Editor.playProgram = function () {
   this.game.states.switchState('Play');
 };
 
-HelixPiEditor.Editor.moveEntityInTime = function (ratio) {
+HelixPiEditor.Editor.moveEntityInTime = function (participant, ratio) {
+  var participantGameObject = this.findParticipant(participant.name).gameObject;
   var lerp = function (startPosition, endPosition, ratio) {
     return {
       x: startPosition.x + (endPosition.x - startPosition.x) * ratio,
@@ -284,10 +280,11 @@ HelixPiEditor.Editor.moveEntityInTime = function (ratio) {
     };
   };
 
-  var firstPosition = _.first(this.positions); 
+  var firstPosition = _.first(this.positions[participant]);
+
   if (ratio === 0 && firstPosition) {
-    this.entity.x = firstPosition.x - this.entity.width / 2;
-    this.entity.y = firstPosition.y - this.entity.height / 2;
+    participantGameObject.x = firstPosition.x - participantGameObject.width / 2;
+    participantGameObject.y = firstPosition.y - participantGameObject.height / 2;
   }
 
   var getPositionAt = function (positions, ratio) {
@@ -322,12 +319,12 @@ HelixPiEditor.Editor.moveEntityInTime = function (ratio) {
     return false;
   };
 
-  var newPosition = getPositionAt(this.positions, ratio);
+  var newPosition = getPositionAt(this.positions[participant.name], ratio);
 
   // TODO - make entity centered
   if (newPosition) {
-    this.entity.x = newPosition.x - this.entity.width / 2;
-    this.entity.y = newPosition.y - this.entity.height / 2;
+    participantGameObject.x = newPosition.x - participantGameObject.width / 2;
+    participantGameObject.y = newPosition.y - participantGameObject.height / 2;
   }
 };
 
@@ -391,17 +388,37 @@ HelixPiEditor.Editor.renderInput = function(input) {
 
 HelixPiEditor.Editor.addScenario = function () {
   var newScenario = {
-    positions: [
+    participants: [
       {
-        x: 200,
-        y: 200,
-        frame: 0
+        name: 'Eevee',
+        sprite: this.textures.paddle
+      },
+
+      {
+        name: 'Greg',
+        sprite: this.textures.ball
       }
     ],
+    positions: {
+      'Eevee': [
+        {
+          x: 200,
+          y: 200,
+          frame: 0
+        }
+      ],
+      'Greg': [
+        {
+          x: 200,
+          y: 200,
+          frame: 0
+        }
+      ]
+    },
 
     input: [
-    ],
-  }
+    ]
+  };
 
   this.scenarios.push(newScenario);
   HelixPiEditor.scenarios(this.scenarios);
@@ -414,12 +431,14 @@ HelixPiEditor.Editor.addScenario = function () {
 };
 
 HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
-  this.positions = this.scenarios[scenarioIndex].positions;
-  this.input = this.scenarios[scenarioIndex].input;
+  var scenario = this.scenarios[scenarioIndex];
+  this.positions = scenario.positions;
+  this.input = scenario.input;
+  scenario.participants.forEach(this.addParticipant.bind(this));
   this.handleTimelineTick(0, true);
   this.reflowScenarioButtons();
-  this.updatePath();
-}
+  //this.updatePath();
+};
 
 HelixPiEditor.Editor.reflowScenarioButtons = function () {
   var yOffset = 55;
@@ -451,3 +470,27 @@ HelixPiEditor.Editor.createScenarioButton = function (scenarioIndex) {
 
   this.scenarioButtons.push(newScenarioButton);
 };
+
+HelixPiEditor.Editor.findParticipant = function (participantName) {
+  return this.participants.find(function(participant) {
+    return participant.name == participantName;
+  });
+}
+
+HelixPiEditor.Editor.addParticipant = function (participant) {
+  // TODO - start at the initial position
+  participant.gameObject = new Kiwi.GameObjects.Sprite(
+    this,
+    participant.sprite,
+    0,
+    0,
+    true
+  );
+
+  this.addChild(participant.gameObject);
+  this.participants.push(participant);
+
+  participant.gameObject.input.enableDrag();
+  participant.gameObject.input.onDragStopped.add(function () { this.droppedEntity(participant) }.bind(this));
+};
+

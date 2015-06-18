@@ -57,7 +57,8 @@ var HelixPiEditor = HelixPiEditor || {};
       var lastPosition = _.last(HelixPiEditor.Editor.positions);
       var totalFrames = (lastPosition && lastPosition.frame);
 
-      HelixPiEditor.Editor.positions.forEach(function (position, index) {
+      // TODO - make wurk for multiple participants
+      [].forEach(function (position, index) {
         var newX = (state.game.stage.width * position.frame / totalFrames) - 8;
         var keyFrameLine = keyFrameLines[index];
         if (keyFrameLine === undefined) {
@@ -75,7 +76,7 @@ var HelixPiEditor = HelixPiEditor || {};
         }
       });
     };
-  
+
 
     self.tick = function(callback) {
       if (mouse.isDown && mouse.y >= timelineRectangle.y) {
