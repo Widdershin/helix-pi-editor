@@ -71,7 +71,7 @@ HelixPiEditor.Editor.create = function () {
     strokeWidth: 4
   });
   this.addChild(this.line);
-  
+
   if (this.scenarios.length === 0) {
     this.addScenario();
   } else {
@@ -133,7 +133,7 @@ HelixPiEditor.Editor.create = function () {
     });
 
     self.checkButtonDown = declareApiCall({
-      takes: ['right', 'left'],
+      takes: ['right', 'left', 'up', 'down'],
       returns: [true, false]
     }, getButtonDown);
 
@@ -265,12 +265,14 @@ HelixPiEditor.Editor.droppedEntity = function () {
 };
 
 HelixPiEditor.Editor.createProgram = function () {
-  this.results = helixPi(this.createScenario(), this.api);
+  this.results = helixPi(this.createScenario(), this.api, 500, 32, HelixPiEditor.results().map(function(entity) {
+    return entity.individual;
+  }));
 };
 
 HelixPiEditor.Editor.playProgram = function () {
   this.createProgram();
-  HelixPiEditor.results(this.results.slice(0, 4));
+  HelixPiEditor.results(this.results.slice(0, 8));
   this.game.states.switchState('Play');
 };
 
@@ -391,12 +393,12 @@ HelixPiEditor.Editor.addScenario = function () {
   var newScenario = {
     positions: [
       {
-        x: 100,
-        y: 100,
+        x: 200,
+        y: 200,
         frame: 0
       }
     ],
-    
+
     input: [
     ],
   }

@@ -57,13 +57,15 @@ HelixPiEditor.Play.create = function () {
 
   restartButton.input.onDown.add(this.restart, this);
 
+  var startingPosition = this.startingPosition();
+
   var that = this;
   this.actors = HelixPiEditor.results().map(function (result) {
     var sprite = new Kiwi.GameObjects.Sprite(
       that,
       that.textures.entity,
-      100, // TODO - fix origin
-      100,
+      startingPosition.x,
+      startingPosition.y,
       true
     );
 
@@ -74,8 +76,10 @@ HelixPiEditor.Play.create = function () {
   });
 
   this.keys = {
-    right: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D),
-    left: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A)
+    up: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.W),
+    left: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A),
+    down: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.S),
+    right: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D)
   }
 };
 
@@ -95,9 +99,15 @@ HelixPiEditor.Play.backToEditor = function () {
 HelixPiEditor.Play.restart = function () {
   this.currentFrame = 0;
 
+  var startingPosition = this.startingPosition();
+
   _.each(this.actors, function (actor) {
-    actor.moveTo(100, 100);
+    actor.moveTo(startingPosition.x, startingPosition.y);
   });
+}
+
+HelixPiEditor.Play.startingPosition = function () {
+  return HelixPiEditor.scenarios()[0].positions[0];
 }
 
 HelixPiEditor.Play.checkButtonDown = function (button) {
