@@ -398,23 +398,35 @@ HelixPiEditor.Editor.addScenario = function () {
       {
         name: 'Greg',
         sprite: this.textures.ball
+      },
+
+      {
+        name: 'Stan',
+        sprite: this.textures.paddle
       }
     ],
     positions: {
       'Eevee': [
         {
           x: 200,
-          y: 200,
+          y: 250,
           frame: 0
         }
       ],
       'Greg': [
         {
-          x: 200,
-          y: 200,
+          x: 400,
+          y: 270,
           frame: 0
         }
-      ]
+      ],
+      'Stan': [
+        {
+          x: 600,
+          y: 250,
+          frame: 0
+        }
+      ],
     },
 
     input: [
@@ -455,7 +467,7 @@ HelixPiEditor.Editor.reflowScenarioButtons = function () {
   } else {
     this.addScenarioButton.y = _.last(this.scenarioButtons).y + yDistance;
   }
-}
+};
 
 HelixPiEditor.Editor.createScenarioButton = function (scenarioIndex) {
   var newScenarioButton = HelixPiEditor.buttons.create(
@@ -480,11 +492,18 @@ HelixPiEditor.Editor.findParticipant = function (participantName) {
 
 HelixPiEditor.Editor.addParticipant = function (participant) {
   // TODO - start at the initial position
+
+  // TODO - handle having no positions
+  var startPosition = _.first(this.positions[participant.name]);
+  if (startPosition === undefined) {
+    startPosition = {x: 250, y: 250};
+  }
+
   participant.gameObject = new Kiwi.GameObjects.Sprite(
     this,
     participant.sprite,
-    0,
-    0,
+    startPosition.x,
+    startPosition.y,
     true
   );
 
