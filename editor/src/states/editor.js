@@ -175,6 +175,7 @@ HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
 };
 
 HelixPiEditor.Editor.createScenario = function () {
+  // TODO - support multiple participants
   return {
     scenarios: this.scenarios.map(function (scenario) {
       var positions = scenario.positions;
