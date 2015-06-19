@@ -10,7 +10,6 @@ HelixPiEditor.Editor.create = function () {
 
   this.timeline = HelixPiEditor.timeline(this);
 
-
   this.participants = [];
 
   this.game.input.keyboard.onKeyDown.add(
@@ -27,7 +26,7 @@ HelixPiEditor.Editor.create = function () {
   this.addChild(this.frameText);
 
   this.currentFrame = 0;
-  this.currentKeyFrame = 0;
+  this.highestFrame = 0;
 
   this.scenarios = HelixPiEditor.scenarios();
 
@@ -42,17 +41,9 @@ HelixPiEditor.Editor.create = function () {
 
   this.scenarioButtons = [];
 
-  this.progressIndicator = new Kiwi.Plugins.Primitives.Line({
-    state: this,
-    points: [
-      [0, this.game.stage.height - 60],
-      [0, this.game.stage.height]
-    ],
-    strokeColor: [1, 1, 1],
-    strokeWidth: 4
-  });
-
-  this.addChild(this.progressIndicator);
+  this.progressIndicator = {
+    destroy: function () {}
+  };
 
   this.line = new Kiwi.Plugins.Primitives.Line({
     state: this,
@@ -158,20 +149,24 @@ HelixPiEditor.Editor.handleTimelineTick = function (ratio, updateCharacterPositi
 }
 
 HelixPiEditor.Editor.lastFrame = function () {
-  return _.chain(this.positions)
-    .map(function(positions, participant) {
-      return _.last(positions).frame;
-    }).max().value();
+  return this.highestFrame;
 };
 
 HelixPiEditor.Editor.displayProgressIndicator = function (progress) {
   var indicatorHeight = 60;
+  this.progressIndicator.destroy();
 
-  this.progressIndicator.points = [
-    [this.game.stage.width * progress, this.game.stage.height - indicatorHeight],
-    [this.game.stage.width * progress, this.game.stage.height]
-  ];
+  this.progressIndicator = new Kiwi.Plugins.Primitives.Line({
+    state: this,
+    points: [
+      [this.game.stage.width * progress, this.game.stage.height - indicatorHeight],
+      [this.game.stage.width * progress, this.game.stage.height]
+    ],
+    strokeColor: [1, 1, 1],
+    strokeWidth: 4
+  });
 
+  this.addChild(this.progressIndicator);
 };
 
 HelixPiEditor.Editor.createScenario = function () {
@@ -265,6 +260,7 @@ HelixPiEditor.Editor.updatePath = function (participant) {
 
 HelixPiEditor.Editor.addKeyFrame = function () {
   this.currentFrame += 60;
+  this.highestFrame = _.max([this.currentFrame, this.highestFrame]);
 };
 
 HelixPiEditor.Editor.onPress = function (keyCode) {
@@ -282,6 +278,8 @@ HelixPiEditor.Editor.createProgram = function () {
   this.results = helixPi(this.createScenario(), this.api, 500, 32, HelixPiEditor.results().map(function(entity) {
     return entity.individual;
   }));
+
+  HelixPiEditor.results(this.results);
 };
 
 HelixPiEditor.Editor.playProgram = function () {
