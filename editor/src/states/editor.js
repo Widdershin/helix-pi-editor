@@ -275,20 +275,19 @@ HelixPiEditor.Editor.droppedEntity = function (participant) {
 };
 
 HelixPiEditor.Editor.createProgram = function () {
-  this.results = helixPi(this.createScenario(), this.api, 500, 32, HelixPiEditor.results().map(function(entity) {
-    return entity.individual;
-  }));
+  this.results = helixPi(this.createScenario(), this.api, 500, 32, HelixPiEditor.results());
 
   HelixPiEditor.results(this.results);
 };
 
 HelixPiEditor.Editor.playProgram = function () {
   this.createProgram();
-  HelixPiEditor.results(this.results.slice(0, 8));
+  HelixPiEditor.results(this.results);
   this.game.states.switchState('Play');
 };
 
 HelixPiEditor.Editor.moveEntityInTime = function (participant, ratio) {
+  // TODO - fix stuff being moved to top left for some reason
   var participantGameObject = this.findParticipant(participant.name).gameObject;
   var lerp = function (startPosition, endPosition, ratio) {
     return {

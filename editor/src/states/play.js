@@ -5,7 +5,7 @@ var HelixPiEditor = HelixPiEditor || {};
 
 HelixPiEditor.Play = new Kiwi.State('Play');
 
-var Actor = function (sprite, genes, api, fitness) {
+var Actor = function (sprite, genes, api, fitness, name) {
   var fitnessText = new Kiwi.GameObjects.TextField(
     HelixPiEditor.Play,
     Math.round(fitness),
@@ -32,7 +32,8 @@ var Actor = function (sprite, genes, api, fitness) {
     moveTo: function (x, y) {
       sprite.x = x; // TODO - fix hard coded start position
       sprite.y = y;
-    }
+    },
+    name: name,
   };
 };
 
@@ -57,13 +58,19 @@ HelixPiEditor.Play.create = function () {
 
   restartButton.input.onDown.add(this.restart, this);
 
-  var startingPosition = this.startingPosition();
-
   var that = this;
-  this.actors = HelixPiEditor.results().map(function (result) {
+  var spriteToUse = {
+    'Eevee': this.textures.paddle,
+    'Greg': this.textures.ball,
+    'Stan': this.textures.paddle
+  }
+
+  this.actors = _.map(HelixPiEditor.results(), function (individuals, participant) {
+    var startingPosition = that.startingPosition(participant);
+
     var sprite = new Kiwi.GameObjects.Sprite(
       that,
-      that.textures.paddle,
+      spriteToUse[participant],
       startingPosition.x,
       startingPosition.y,
       true
@@ -72,7 +79,7 @@ HelixPiEditor.Play.create = function () {
     that.addChild(sprite);
 
     var compiledApi = HelixPiEditor.Editor.api(sprite, that.checkButtonDown.bind(that));
-    return new Actor(sprite, result.individual, compiledApi, result.fitness);
+    return new Actor(sprite, individuals[0], compiledApi, individuals[0].fitness, participant);
   });
 
   this.keys = {
@@ -99,15 +106,15 @@ HelixPiEditor.Play.backToEditor = function () {
 HelixPiEditor.Play.restart = function () {
   this.currentFrame = 0;
 
-  var startingPosition = this.startingPosition();
-
+  var that = this;
   _.each(this.actors, function (actor) {
+    var startingPosition = that.startingPosition(actor.name);
     actor.moveTo(startingPosition.x, startingPosition.y);
   });
 }
 
-HelixPiEditor.Play.startingPosition = function () {
-  return HelixPiEditor.scenarios()[0].positions[0];
+HelixPiEditor.Play.startingPosition = function (participant) {
+  return HelixPiEditor.scenarios()[0].positions[participant][0];
 }
 
 HelixPiEditor.Play.checkButtonDown = function (button) {
