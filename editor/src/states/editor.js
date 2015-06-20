@@ -8,6 +8,8 @@ HelixPiEditor.Editor = new Kiwi.State('Editor');
 HelixPiEditor.Editor.create = function () {
   this.game.huds.defaultHUD.removeAllWidgets();
 
+  this.events = {};
+
   this.timeline = HelixPiEditor.timeline(this);
 
   this.participants = [];
@@ -20,6 +22,10 @@ HelixPiEditor.Editor.create = function () {
   this.mouse = this.game.input.mouse;
   this.mouse.onDown.add(this.handleClick, this);
   this.mouse.onUp.add(this.handleClickRelease, this);
+
+  if (this.frameText) {
+    this.frameText.destroy();
+  }
 
   this.frameText = new Kiwi.GameObjects.TextField(this, 'test', 10, 10, '#FFF');
 
@@ -296,11 +302,12 @@ HelixPiEditor.Editor.moveEntityInTime = function (participant, ratio) {
     };
   };
 
-  var firstPosition = _.first(this.positions[participant]);
+  var firstPosition = _.first(this.positions[participant.name]);
 
   if (ratio === 0 && firstPosition) {
     participantGameObject.x = firstPosition.x - participantGameObject.width / 2;
     participantGameObject.y = firstPosition.y - participantGameObject.height / 2;
+    return;
   }
 
   var that = this;
@@ -397,10 +404,14 @@ HelixPiEditor.Editor.renderInput = function(input) {
     color: [0.5, 0.5, 0.5],
   })
 
-  this.frameText = new Kiwi.GameObjects.TextField(this, 'test', 10, 10, '#FFF');
   this.addChild(newInput);
   var text = new Kiwi.GameObjects.TextField(this, input.key, newInput.x + 5, newInput.y + 5, '#FFF');
   this.addChild(text);
+
+  this.on('changeScenario', function () {
+    newInput.destroy();
+    text.destroy();
+  });
 }
 
 HelixPiEditor.Editor.addScenario = function () {
@@ -469,9 +480,12 @@ HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
 
   this.participants = [];
 
+  this.trigger('changeScenario');
+
   var scenario = this.scenarios[scenarioIndex];
   this.positions = scenario.positions;
   this.input = scenario.input;
+  this.input.forEach(this.renderInput.bind(this));
   scenario.participants.forEach(this.addParticipant.bind(this));
   this.handleTimelineTick(0, true);
   this.reflowScenarioButtons();
@@ -536,5 +550,23 @@ HelixPiEditor.Editor.addParticipant = function (participant) {
 
   participant.gameObject.input.enableDrag();
   participant.gameObject.input.onDragStopped.add(function () { this.droppedEntity(participant) }.bind(this));
+};
+
+HelixPiEditor.Editor.eventHandlers = function (eventName) {
+  if (this.events[eventName] === undefined) {
+    this.events[eventName] = [];
+  }
+
+  return this.events[eventName];
+};
+
+HelixPiEditor.Editor.on = function (eventName, callback) {
+  this.eventHandlers(eventName).push(callback.bind(this));
+};
+
+HelixPiEditor.Editor.trigger = function (eventName) {
+  this.eventHandlers(eventName).forEach(function (handler) {
+    handler();
+  });
 };
 
