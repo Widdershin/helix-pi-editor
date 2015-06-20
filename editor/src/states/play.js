@@ -15,12 +15,18 @@ var Actor = function (sprite, genes, api, fitness, name) {
     15
   );
 
+  var physics = sprite.components.add(
+    new Kiwi.Components.ArcadePhysics(HelixPiEditor.Play, sprite.box)
+  );
+
   fitnessText.textAlign = Kiwi.GameObjects.TextField.TEXT_ALIGN_CENTER;
 
   HelixPiEditor.Play.addChild(fitnessText);
 
   return {
     play: function () {
+      physics.update();
+
       _.each(genes, function (gene) {
         gene(api);
       });
@@ -33,9 +39,18 @@ var Actor = function (sprite, genes, api, fitness, name) {
       sprite.x = x; // TODO - fix hard coded start position
       sprite.y = y;
     },
+
     name: name,
+    physics: physics,
   };
 };
+
+HelixPiEditor.Play.checkCollision = function (entity) {
+  return this.actors.filter(function (actor) {
+    return actor.sprite !== entity &&
+      actor.physics.overlaps(entity);
+  });
+}
 
 HelixPiEditor.Play.create = function () {
   this.currentFrame = 0;
@@ -78,7 +93,7 @@ HelixPiEditor.Play.create = function () {
 
     that.addChild(sprite);
 
-    var compiledApi = HelixPiEditor.Editor.api(sprite, that.checkButtonDown.bind(that));
+    var compiledApi = HelixPiEditor.Editor.api(sprite, that.checkButtonDown.bind(that), that.checkCollision.bind(that));
     return new Actor(sprite, individuals[0], compiledApi, individuals[0].fitness, participant);
   });
 

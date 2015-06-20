@@ -66,9 +66,9 @@ HelixPiEditor.Editor.create = function () {
     this.scenarios.forEach(function (scenario, index) {
       this.createScenarioButton(index);
     }.bind(this));
-
-    this.loadScenario(0);
   };
+
+  this.loadScenario(0);
 
   this.progressIndicator = {destroy: function () {}};
 
@@ -110,16 +110,23 @@ HelixPiEditor.Editor.create = function () {
     }))
   });
 
-  this.api = function (entity, getButtonDown) {
+  this.api = function (entity, getButtonDown, checkCollision) {
+    var COMMAND = 'command';
+    var QUERY = 'query';
+    var ENTITY = { name: 'string', x: 0, y: 0 };
+
     var self = {};
 
-    function declareApiCall(options, f) {
+    function declareApiCall(name, options, f) {
+      f.type = options.type;
       f.takes = options.takes;
       f.returns = options.returns;
-      return f;
+
+      self[name] = f;
     }
 
-    self.move = declareApiCall({
+    declareApiCall('move', {
+      type: COMMAND,
       takes: {x: 0, y: 0},
       returns: null
     }, function (coordinates) {
@@ -127,12 +134,14 @@ HelixPiEditor.Editor.create = function () {
       entity.y += coordinates.y;
     });
 
-    self.checkButtonDown = declareApiCall({
+    declareApiCall('checkButtonDown', {
+      type: QUERY,
       takes: ['right', 'left', 'up', 'down'],
       returns: [true, false]
     }, getButtonDown);
 
-    self.getPosition = declareApiCall({
+    declareApiCall('getPosition', {
+      type: QUERY,
       takes: [],
       returns: {x: 0, y: 0}
     }, function () {
@@ -140,6 +149,14 @@ HelixPiEditor.Editor.create = function () {
         x: entity.x,
         y: entity.y
       };
+    });
+
+    declareApiCall('checkCollision', {
+      type: QUERY,
+      takes: null,
+      returns: []
+    }, function (currentFrame) {
+      return checkCollision(entity, currentFrame);
     });
 
     return self;
