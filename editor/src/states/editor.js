@@ -102,6 +102,14 @@ HelixPiEditor.Editor.create = function () {
   this.input = this.input || [];
   this.input.forEach(this.renderInput.bind(this));
 
+  this.on('changeScenario', function () {
+    this.highestFrame = _.max(_.map(this.positions, function (positionsPerParticipant) {
+      return _.max(positionsPerParticipant.map(function (position) {
+        return position.frame;
+      }))
+    }))
+  });
+
   this.api = function (entity, getButtonDown) {
     var self = {};
 
@@ -480,8 +488,6 @@ HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
 
   this.participants = [];
 
-  this.trigger('changeScenario');
-
   var scenario = this.scenarios[scenarioIndex];
   this.positions = scenario.positions;
   this.input = scenario.input;
@@ -489,6 +495,8 @@ HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
   scenario.participants.forEach(this.addParticipant.bind(this));
   this.handleTimelineTick(0, true);
   this.reflowScenarioButtons();
+
+  this.trigger('changeScenario');
 };
 
 HelixPiEditor.Editor.reflowScenarioButtons = function () {
