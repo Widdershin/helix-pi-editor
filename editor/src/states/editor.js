@@ -111,6 +111,7 @@ HelixPiEditor.Editor.create = function () {
   });
 
   this.api = function (entity, getButtonDown, checkCollision) {
+    var UPDATE = 'update';
     var COMMAND = 'command';
     var QUERY = 'query';
     var ENTITY = { name: 'string', x: 0, y: 0 };
@@ -125,13 +126,21 @@ HelixPiEditor.Editor.create = function () {
       self[name] = f;
     }
 
-    declareApiCall('move', {
+    declareApiCall('update', {
+      type: UPDATE,
+      takes: null,
+      returns: null
+    }, function () {
+      entity.x += entity.velocity.x;
+      entity.y += entity.velocity.y;
+    });
+
+    declareApiCall('setVelocity', {
       type: COMMAND,
       takes: {x: 0, y: 0},
       returns: null
-    }, function (coordinates) {
-      entity.x += coordinates.x;
-      entity.y += coordinates.y;
+    }, function (velocity) {
+      entity.velocity = velocity;
     });
 
     declareApiCall('checkButtonDown', {
@@ -306,7 +315,7 @@ HelixPiEditor.Editor.droppedEntity = function (participant) {
 };
 
 HelixPiEditor.Editor.createProgram = function () {
-  this.results = helixPi(this.createScenario(), this.api, 500, 32, HelixPiEditor.results());
+  this.results = helixPi(this.createScenario(), this.api, 100, 32, HelixPiEditor.results());
 
   HelixPiEditor.results(this.results);
 };

@@ -15,6 +15,8 @@ var Actor = function (sprite, genes, api, fitness, name) {
     15
   );
 
+  sprite.velocity = {x: 0, y: 0};
+
   var physics = sprite.components.add(
     new Kiwi.Components.ArcadePhysics(HelixPiEditor.Play, sprite.box)
   );
@@ -25,11 +27,11 @@ var Actor = function (sprite, genes, api, fitness, name) {
 
   return {
     play: function () {
-      physics.update();
-
       _.each(genes, function (gene) {
         gene(api);
       });
+
+      api.update();
 
       fitnessText.x = sprite.x + sprite.width / 2;
       fitnessText.y = sprite.y + 130;
@@ -42,6 +44,7 @@ var Actor = function (sprite, genes, api, fitness, name) {
 
     name: name,
     physics: physics,
+    sprite: sprite
   };
 };
 
@@ -125,6 +128,7 @@ HelixPiEditor.Play.restart = function () {
   _.each(this.actors, function (actor) {
     var startingPosition = that.startingPosition(actor.name);
     actor.moveTo(startingPosition.x, startingPosition.y);
+    actor.sprite.velocity = {x: 0, y: 0};
   });
 }
 
