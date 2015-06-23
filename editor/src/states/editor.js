@@ -143,6 +143,14 @@ HelixPiEditor.Editor.create = function () {
       entity.velocity = velocity;
     });
 
+    declareApiCall('stop', {
+      type: COMMAND,
+      takes: null,
+      returns: null
+    }, function () {
+      entity.velocity = {x: 0, y: 0};
+    });
+
     declareApiCall('checkButtonDown', {
       type: QUERY,
       takes: ['right', 'left', 'up', 'down'],
