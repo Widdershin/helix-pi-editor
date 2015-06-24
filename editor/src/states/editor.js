@@ -110,7 +110,7 @@ HelixPiEditor.Editor.create = function () {
     }))
   });
 
-  this.api = function (entity, getButtonDown, checkCollision) {
+  this.api = function (entity, implemenation) {
     var UPDATE = 'update';
     var COMMAND = 'command';
     var QUERY = 'query';
@@ -155,7 +155,13 @@ HelixPiEditor.Editor.create = function () {
       type: QUERY,
       takes: ['right', 'left', 'up', 'down'],
       returns: [true, false]
-    }, getButtonDown);
+    }, implemenation.checkButtonDown);
+
+    declareApiCall('checkButtonReleased', {
+      type: QUERY,
+      takes: ['right', 'left', 'up', 'down'],
+      returns: [true, false],
+    }, implemenation.checkButtonReleased);
 
     declareApiCall('getPosition', {
       type: QUERY,
@@ -173,7 +179,7 @@ HelixPiEditor.Editor.create = function () {
       takes: null,
       returns: []
     }, function (currentFrame) {
-      return checkCollision(entity, currentFrame);
+      return implemenation.checkCollision(entity, currentFrame);
     });
 
     return self;
@@ -323,7 +329,7 @@ HelixPiEditor.Editor.droppedEntity = function (participant) {
 };
 
 HelixPiEditor.Editor.createProgram = function () {
-  this.results = helixPi(this.createScenario(), this.api, 100, 32, HelixPiEditor.results());
+  this.results = helixPi(this.createScenario(), this.api, 30, 32, HelixPiEditor.results());
 
   HelixPiEditor.results(this.results);
 };

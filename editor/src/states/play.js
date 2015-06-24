@@ -96,7 +96,12 @@ HelixPiEditor.Play.create = function () {
 
     that.addChild(sprite);
 
-    var compiledApi = HelixPiEditor.Editor.api(sprite, that.checkButtonDown.bind(that), that.checkCollision.bind(that));
+    var compiledApi = HelixPiEditor.Editor.api(sprite, {
+      checkButtonDown: that.checkButtonDown.bind(that),
+      checkButtonReleased: that.checkButtonReleased.bind(that),
+      checkCollision: that.checkCollision.bind(that)
+    });
+
     return new Actor(sprite, individuals[0], compiledApi, individuals[0].fitness, participant);
   });
 
@@ -138,4 +143,8 @@ HelixPiEditor.Play.startingPosition = function (participant) {
 
 HelixPiEditor.Play.checkButtonDown = function (button) {
   return this.keys[button].isDown;
+}
+
+HelixPiEditor.Play.checkButtonReleased = function (button) {
+  return this.keys[button].justReleased();
 }
