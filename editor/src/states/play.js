@@ -28,10 +28,10 @@ var Actor = function (sprite, genes, api, fitness, name) {
   return {
     play: function () {
       _.each(genes, function (gene) {
-        gene(api);
+        gene(sprite, api);
       });
 
-      api.update();
+      api.update(sprite);
 
       fitnessText.x = sprite.x + sprite.width / 2;
       fitnessText.y = sprite.y + 130;
@@ -96,7 +96,7 @@ HelixPiEditor.Play.create = function () {
 
     that.addChild(sprite);
 
-    var compiledApi = HelixPiEditor.Editor.api(sprite, {
+    var compiledApi = helixPi.createApi({
       checkButtonDown: that.checkButtonDown.bind(that),
       checkButtonReleased: that.checkButtonReleased.bind(that),
       checkCollision: that.checkCollision.bind(that)
@@ -141,10 +141,10 @@ HelixPiEditor.Play.startingPosition = function (participant) {
   return HelixPiEditor.scenarios()[0].positions[participant][0];
 }
 
-HelixPiEditor.Play.checkButtonDown = function (button) {
+HelixPiEditor.Play.checkButtonDown = function (entity, button) {
   return this.keys[button].isDown;
 }
 
-HelixPiEditor.Play.checkButtonReleased = function (button) {
+HelixPiEditor.Play.checkButtonReleased = function (entity, button) {
   return this.keys[button].justReleased();
 }

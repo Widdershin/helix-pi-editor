@@ -97,7 +97,6 @@ HelixPiEditor.Editor.create = function () {
   this.playProgramButton.input.onDown.add(this.playProgram, this);
   this.addInputButton.input.onDown.add(this.addInput, this);
 
-
   this.addingInput = false;
   this.input = this.input || [];
   this.input.forEach(this.renderInput.bind(this));
@@ -109,81 +108,6 @@ HelixPiEditor.Editor.create = function () {
       }))
     }))
   });
-
-  this.api = function (entity, implemenation) {
-    var UPDATE = 'update';
-    var COMMAND = 'command';
-    var QUERY = 'query';
-    var ENTITY = { name: 'string', x: 0, y: 0 };
-
-    var self = {};
-
-    function declareApiCall(name, options, f) {
-      f.type = options.type;
-      f.takes = options.takes;
-      f.returns = options.returns;
-
-      self[name] = f;
-    }
-
-    declareApiCall('update', {
-      type: UPDATE,
-      takes: null,
-      returns: null
-    }, function () {
-      entity.x += entity.velocity.x;
-      entity.y += entity.velocity.y;
-    });
-
-    declareApiCall('setVelocity', {
-      type: COMMAND,
-      takes: {x: 0, y: 0},
-      returns: null
-    }, function (velocity) {
-      entity.velocity = velocity;
-    });
-
-    declareApiCall('stop', {
-      type: COMMAND,
-      takes: null,
-      returns: null
-    }, function () {
-      entity.velocity = {x: 0, y: 0};
-    });
-
-    declareApiCall('checkButtonDown', {
-      type: QUERY,
-      takes: ['right', 'left', 'up', 'down'],
-      returns: [true, false]
-    }, implemenation.checkButtonDown);
-
-    declareApiCall('checkButtonReleased', {
-      type: QUERY,
-      takes: ['right', 'left', 'up', 'down'],
-      returns: [true, false],
-    }, implemenation.checkButtonReleased);
-
-    declareApiCall('getPosition', {
-      type: QUERY,
-      takes: [],
-      returns: {x: 0, y: 0}
-    }, function () {
-      return {
-        x: entity.x,
-        y: entity.y
-      };
-    });
-
-    declareApiCall('checkCollision', {
-      type: QUERY,
-      takes: null,
-      returns: []
-    }, function (currentFrame) {
-      return implemenation.checkCollision(entity, currentFrame);
-    });
-
-    return self;
-  };
 };
 
 HelixPiEditor.Editor.update = function () {
@@ -329,7 +253,7 @@ HelixPiEditor.Editor.droppedEntity = function (participant) {
 };
 
 HelixPiEditor.Editor.createProgram = function () {
-  this.results = helixPi(this.createScenario(), this.api, 30, 32, HelixPiEditor.results());
+  this.results = helixPi(this.createScenario(), 30, 32, HelixPiEditor.results());
 
   HelixPiEditor.results(this.results);
 };
@@ -571,7 +495,7 @@ HelixPiEditor.Editor.createScenarioButton = function (scenarioIndex) {
 };
 
 HelixPiEditor.Editor.findParticipant = function (participantName) {
-  return this.participants.find(function(participant) {
+  return _.find(this.participants, function(participant) {
     return participant.name == participantName;
   });
 }
