@@ -207,7 +207,7 @@ HelixPiEditor.Editor.savePosition = function (participant) {
 
 HelixPiEditor.Editor.createPosition = function (position) {
   var participantPositions = this.positions[position.participant.name];
-  var existingPositionForFrameIndex = participantPositions.findIndex(function (existingPosition) {
+  var existingPositionForFrameIndex = _.findIndex(participantPositions, function (existingPosition) {
     return existingPosition.frame == position.frame;
   });
 
