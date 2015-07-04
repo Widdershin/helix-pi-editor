@@ -1,3 +1,4 @@
+[![Stories in Ready](https://badge.waffle.io/Widdershin/helix-pi-editor.png?label=ready&title=Ready)](https://waffle.io/Widdershin/helix-pi-editor)
 # helix-pi-editor
 Web editor for Helix Pi
 
