@@ -133,7 +133,8 @@ HelixPiEditor.Play.restart = function () {
   _.each(this.actors, function (actor) {
     var startingPosition = that.startingPosition(actor.name);
     actor.moveTo(startingPosition.x, startingPosition.y);
-    actor.sprite.velocity = {x: 0, y: 0};
+    actor.sprite.velocity.x = 0;
+    actor.sprite.velocity.y = 0;
   });
 }
 
