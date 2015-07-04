@@ -42,6 +42,11 @@ var Actor = function (sprite, genes, api, fitness, name) {
       sprite.y = y;
     },
 
+    destroy: function () {
+      sprite.destroy();
+      fitnessText.destroy();
+    },
+
     name: name,
     physics: physics,
     sprite: sprite
@@ -76,6 +81,18 @@ HelixPiEditor.Play.create = function () {
 
   restartButton.input.onDown.add(this.restart, this);
 
+
+  this.actors = this.createActors();
+
+  this.keys = {
+    up: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.W),
+    left: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A),
+    down: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.S),
+    right: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D)
+  }
+};
+
+HelixPiEditor.Play.createActors = function () {
   var that = this;
   var spriteToUse = {
     'Eevee': this.textures.paddle,
@@ -83,7 +100,7 @@ HelixPiEditor.Play.create = function () {
     'Stan': this.textures.paddle
   }
 
-  this.actors = _.map(HelixPiEditor.results(), function (individuals, participant) {
+  return _.map(HelixPiEditor.results(), function (individuals, participant) {
     var startingPosition = that.startingPosition(participant);
 
     var sprite = new Kiwi.GameObjects.Sprite(
@@ -104,14 +121,7 @@ HelixPiEditor.Play.create = function () {
 
     return new Actor(sprite, individuals[0], compiledApi, individuals[0].fitness, participant);
   });
-
-  this.keys = {
-    up: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.W),
-    left: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A),
-    down: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.S),
-    right: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D)
-  }
-};
+}
 
 HelixPiEditor.Play.update = function () {
   _.each(this.actors, function (actor) {
@@ -131,11 +141,10 @@ HelixPiEditor.Play.restart = function () {
 
   var that = this;
   _.each(this.actors, function (actor) {
-    var startingPosition = that.startingPosition(actor.name);
-    actor.moveTo(startingPosition.x, startingPosition.y);
-    actor.sprite.velocity.x = 0;
-    actor.sprite.velocity.y = 0;
+    actor.destroy();
   });
+
+  this.actors = this.createActors();
 }
 
 HelixPiEditor.Play.startingPosition = function (participant) {
