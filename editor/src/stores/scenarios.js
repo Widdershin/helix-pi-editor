@@ -1,14 +1,17 @@
+/* globals localStorage */
 
 var HelixPiEditor = HelixPiEditor || {};
 
 (function (exports) {
-  var _scenarios = [];
+  if (localStorage.scenarios === undefined) {
+    localStorage.scenarios = '[]';
+  }
 
   exports.scenarios = function (newScenarios) {
     if (newScenarios !== undefined) {
-      _scenarios = newScenarios;
+      localStorage.scenarios = JSON.stringify(newScenarios);
     }
 
-    return _scenarios;
+    return JSON.parse(localStorage.scenarios);
   };
 }(HelixPiEditor));

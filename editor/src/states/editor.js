@@ -14,6 +14,14 @@ HelixPiEditor.Editor.create = function () {
 
   this.participants = [];
 
+  this.on('changeScenario', function () {
+    this.highestFrame = _.max(_.map(this.positions, function (positionsPerParticipant) {
+      return _.max(positionsPerParticipant.map(function (position) {
+        return position.frame;
+      }))
+    }))
+  });
+
   this.game.input.keyboard.onKeyDown.add(
     this.onPress,
     this
@@ -101,19 +109,12 @@ HelixPiEditor.Editor.create = function () {
   this.input = this.input || [];
   this.input.forEach(this.renderInput.bind(this));
 
-  this.on('changeScenario', function () {
-    this.highestFrame = _.max(_.map(this.positions, function (positionsPerParticipant) {
-      return _.max(positionsPerParticipant.map(function (position) {
-        return position.frame;
-      }))
-    }))
-  });
 };
 
 HelixPiEditor.Editor.update = function () {
   Kiwi.State.prototype.update.call(this);
 
-  this.frameText.text = ['Frame: ', this.currentFrame].join('');
+  this.frameText.text = ['Frame: ', this.currentFrame, '/', this.highestFrame].join('');
 
   this.timeline.tick(this.handleTimelineTick.bind(this));
 };
@@ -195,7 +196,7 @@ HelixPiEditor.Editor.createScenario = function () {
 };
 
 HelixPiEditor.Editor.savePosition = function (participant) {
-  var participantGameObject = this.findParticipant(participant.name).gameObject;
+  var participantGameObject = this.participantGameObjects[participant.name];
 
   this.createPosition({
     participant: participant,
@@ -220,6 +221,7 @@ HelixPiEditor.Editor.createPosition = function (position) {
     return a.frame > b.frame;
   });
 
+  HelixPiEditor.scenarios(this.scenarios);
   this.updatePath(position.participant);
 };
 
@@ -266,7 +268,7 @@ HelixPiEditor.Editor.playProgram = function () {
 
 HelixPiEditor.Editor.moveEntityInTime = function (participant, ratio) {
   // TODO - fix stuff being moved to top left for some reason
-  var participantGameObject = this.findParticipant(participant.name).gameObject;
+  var participantGameObject = this.participantGameObjects[participant.name];
   var lerp = function (startPosition, endPosition, ratio) {
     return {
       x: startPosition.x + (endPosition.x - startPosition.x) * ratio,
@@ -391,17 +393,17 @@ HelixPiEditor.Editor.addScenario = function () {
     participants: [
       {
         name: 'Eevee',
-        sprite: this.textures.paddle
+        sprite: 'paddle'
       },
 
       {
         name: 'Greg',
-        sprite: this.textures.ball
+        sprite: 'ball'
       },
 
       {
         name: 'Stan',
-        sprite: this.textures.paddle
+        sprite: 'paddle'
       }
     ],
     positions: {
@@ -446,8 +448,9 @@ HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
   this.line.destroy();
   this.line = {destroy: function () {}};
 
+  const that = this;
   this.participants.forEach(function (participant) {
-    participant.gameObject.destroy();
+    that.participantGameObjects[participant.name].destroy();
   });
 
   this.participants = [];
@@ -456,7 +459,11 @@ HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
   this.positions = scenario.positions;
   this.input = scenario.input;
   this.input.forEach(this.renderInput.bind(this));
+
+  this.participantGameObjects = {};
   scenario.participants.forEach(this.addParticipant.bind(this));
+
+
   this.handleTimelineTick(0, true);
   this.reflowScenarioButtons();
 
@@ -509,19 +516,21 @@ HelixPiEditor.Editor.addParticipant = function (participant) {
     startPosition = {x: 250, y: 250};
   }
 
-  participant.gameObject = new Kiwi.GameObjects.Sprite(
+  const participantGameObject = new Kiwi.GameObjects.Sprite(
     this,
-    participant.sprite,
+    this.textures[participant.sprite],
     startPosition.x,
     startPosition.y,
     true
   );
 
-  this.addChild(participant.gameObject);
+  this.participantGameObjects[participant.name] = participantGameObject;
+
+  this.addChild(participantGameObject);
   this.participants.push(participant);
 
-  participant.gameObject.input.enableDrag();
-  participant.gameObject.input.onDragStopped.add(function () { this.droppedEntity(participant) }.bind(this));
+  participantGameObject.input.enableDrag();
+  participantGameObject.input.onDragStopped.add(function () { this.droppedEntity(participant) }.bind(this));
 };
 
 HelixPiEditor.Editor.eventHandlers = function (eventName) {
