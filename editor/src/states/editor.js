@@ -39,7 +39,7 @@ function kickOffWorkerLoop () {
 HelixPiEditor.Editor.create = function () {
   this.game.huds.defaultHUD.removeAllWidgets();
 
-  this.events = {};
+  this.events = this.events || {};
 
   this.timeline = HelixPiEditor.timeline(this);
 
