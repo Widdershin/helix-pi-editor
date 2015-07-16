@@ -30,3 +30,4 @@ node_modules
 lib/kiwi.js/
 
 public/bundle.js
+public/worker.js

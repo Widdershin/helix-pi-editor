@@ -1,7 +1,7 @@
 var HelixPiEditor = HelixPiEditor || {};
 
 (function (exports) {
-  var _results = [];
+  var _results = {};
 
   exports.results = function (newResults) {
     if (newResults !== undefined) {

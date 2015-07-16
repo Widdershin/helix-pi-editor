@@ -5,6 +5,37 @@ var HelixPiEditor = HelixPiEditor || {};
 
 HelixPiEditor.Editor = new Kiwi.State('Editor');
 
+if (HelixPiEditor.worker === undefined) {
+  HelixPiEditor.worker = new Worker('/worker.js');
+
+  HelixPiEditor.worker.onmessage = function (e) {
+    HelixPiEditor.results(deserializeWorkerResults(e.data));
+    HelixPiEditor.Editor.renderResults(HelixPiEditor.results());
+
+    kickOffWorkerLoop();
+  };
+}
+
+function serializeResults (results) {
+  return JSON.stringify(Object.keys(results).map(participant => {
+    return serializeResult(participant, results[participant]);
+  }).reduce((serializedResults, result) => Object.assign(serializedResults, result), {}));
+}
+
+function serializeResult (participant, individuals) {
+  return {[participant]: individuals.map(helixPi.serialize)};
+}
+
+function deserializeWorkerResults(results) {
+  return _.chain(JSON.parse(results)).map(function (individuals, participant) {
+    return [participant, individuals.map(helixPi.deserialize)];
+  }).object().value();
+}
+
+function kickOffWorkerLoop () {
+  HelixPiEditor.worker.postMessage([HelixPiEditor.Editor.createScenario(), 15, 32]);
+};
+
 HelixPiEditor.Editor.create = function () {
   this.game.huds.defaultHUD.removeAllWidgets();
 
@@ -110,6 +141,8 @@ HelixPiEditor.Editor.create = function () {
   this.addingInput = false;
   this.input = this.input || [];
   this.input.forEach(this.renderInput.bind(this));
+
+  kickOffWorkerLoop();
 };
 
 HelixPiEditor.Editor.update = function () {
@@ -176,23 +209,11 @@ HelixPiEditor.Editor.createScenario = function () {
 
         initialPositions: initialPositions,
 
-        startPosition: function (name) {
-          return initialPositions[name];
-        },
-
         expectedPositions: expectedPositions,
         input: input
       };
     }),
 
-    fitness: function (expectedPosition, entity) {
-      var distance = {
-        x: Math.abs(expectedPosition.x - entity.x),
-        y: Math.abs(expectedPosition.y - entity.y)
-      };
-
-      return 1000 - Math.pow((distance.x + distance.y), 1.4);
-    }
   };
 };
 
@@ -514,11 +535,17 @@ HelixPiEditor.Editor.renderResults = function (results) {
 
   var that = this;
 
+  this.trigger('renderResults');
+
   _.each(results, function (results, name) {
     var resultText = new Kiwi.GameObjects.TextField(that, name + ': ' + results[0].fitness, 600, resultHeight, '#FFF', 20);
     resultHeight += resultOffset;
 
     that.addChild(resultText);
+
+    that.on('renderResults', function () {
+      resultText.destroy();
+    });
   });
 }
 
