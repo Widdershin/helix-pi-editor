@@ -57,7 +57,7 @@ HelixPiEditor.Play.checkCollision = function (entity) {
   return this.actors.filter(function (actor) {
     return actor.sprite !== entity &&
       actor.physics.overlaps(entity);
-  });
+  }).length > 0;
 }
 
 HelixPiEditor.Play.create = function () {
