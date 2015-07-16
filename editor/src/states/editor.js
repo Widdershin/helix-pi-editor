@@ -33,7 +33,7 @@ function deserializeWorkerResults(results) {
 }
 
 function kickOffWorkerLoop () {
-  HelixPiEditor.worker.postMessage([HelixPiEditor.Editor.createScenario(), 15, 32]);
+  HelixPiEditor.worker.postMessage([HelixPiEditor.Editor.createScenario(), 5, 32, serializeResults(HelixPiEditor.results())]);
 };
 
 HelixPiEditor.Editor.create = function () {
