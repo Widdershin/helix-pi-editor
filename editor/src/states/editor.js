@@ -276,15 +276,7 @@ HelixPiEditor.Editor.droppedEntity = function (participant) {
   this.updatePath(participant);
 };
 
-HelixPiEditor.Editor.createProgram = function () {
-  this.results = helixPi(this.createScenario(), 30, 32, HelixPiEditor.results());
-
-  HelixPiEditor.results(this.results);
-};
-
 HelixPiEditor.Editor.playProgram = function () {
-  this.createProgram();
-  HelixPiEditor.results(this.results);
   this.game.states.switchState('Play');
 };
 
