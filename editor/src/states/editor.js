@@ -9,31 +9,15 @@ if (HelixPiEditor.worker === undefined) {
   HelixPiEditor.worker = new Worker('/worker.js');
 
   HelixPiEditor.worker.onmessage = function (e) {
-    HelixPiEditor.results(deserializeWorkerResults(e.data));
+    HelixPiEditor.results(helixPi.deserialize.results(e.data));
     HelixPiEditor.Editor.renderResults(HelixPiEditor.results());
 
     kickOffWorkerLoop();
   };
 }
 
-function serializeResults (results) {
-  return JSON.stringify(Object.keys(results).map(participant => {
-    return serializeResult(participant, results[participant]);
-  }).reduce((serializedResults, result) => Object.assign(serializedResults, result), {}));
-}
-
-function serializeResult (participant, individuals) {
-  return {[participant]: individuals.map(helixPi.serialize)};
-}
-
-function deserializeWorkerResults(results) {
-  return _.chain(JSON.parse(results)).map(function (individuals, participant) {
-    return [participant, individuals.map(helixPi.deserialize)];
-  }).object().value();
-}
-
 function kickOffWorkerLoop () {
-  HelixPiEditor.worker.postMessage([HelixPiEditor.Editor.createScenario(), 5, 32, serializeResults(HelixPiEditor.results())]);
+  HelixPiEditor.worker.postMessage([HelixPiEditor.Editor.createScenario(), 5, 32, helixPi.serialize.results(HelixPiEditor.results())]);
 };
 
 HelixPiEditor.Editor.create = function () {
