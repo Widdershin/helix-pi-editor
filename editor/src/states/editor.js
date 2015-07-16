@@ -22,6 +22,8 @@ HelixPiEditor.Editor.create = function () {
     }))
   });
 
+  this.renderResults(HelixPiEditor.results());
+
   this.game.input.keyboard.onKeyDown.add(
     this.onPress,
     this
@@ -108,7 +110,6 @@ HelixPiEditor.Editor.create = function () {
   this.addingInput = false;
   this.input = this.input || [];
   this.input.forEach(this.renderInput.bind(this));
-
 };
 
 HelixPiEditor.Editor.update = function () {
@@ -504,6 +505,20 @@ HelixPiEditor.Editor.createScenarioButton = function (scenarioIndex) {
 HelixPiEditor.Editor.findParticipant = function (participantName) {
   return _.find(this.participants, function(participant) {
     return participant.name == participantName;
+  });
+}
+
+HelixPiEditor.Editor.renderResults = function (results) {
+  var resultHeight = 100;
+  var resultOffset = 25;
+
+  var that = this;
+
+  _.each(results, function (results, name) {
+    var resultText = new Kiwi.GameObjects.TextField(that, name + ': ' + results[0].fitness, 600, resultHeight, '#FFF', 20);
+    resultHeight += resultOffset;
+
+    that.addChild(resultText);
   });
 }
 
