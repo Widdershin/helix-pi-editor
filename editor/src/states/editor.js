@@ -475,6 +475,7 @@ HelixPiEditor.Editor.reflowScenarioButtons = function () {
   this.scenarioButtons.forEach(function (button, index) {
     button.x = 5;
     button.y = index + yOffset + index * yDistance;
+    button.destroyButton.y = button.y;
   });
 
   if (this.scenarioButtons.length === 0) {
@@ -491,6 +492,26 @@ HelixPiEditor.Editor.createScenarioButton = function (scenarioIndex) {
     5,
     55
   );
+
+  var destroyButton = HelixPiEditor.buttons.create(
+    this,
+    'x',
+    110,
+    55
+  );
+
+  destroyButton.input.onDown.add(function () {
+    this.scenarios.splice(scenarioIndex, 1);
+    this.scenarioButtons.splice(this.scenarioButtons.indexOf(newScenarioButton), 1);
+    HelixPiEditor.scenarios(this.scenarios);
+
+    this.game.huds.defaultHUD.removeWidget(newScenarioButton);
+    this.game.huds.defaultHUD.removeWidget(destroyButton);
+
+    this.reflowScenarioButtons();
+  }.bind(this));
+
+  newScenarioButton.destroyButton = destroyButton;
 
   newScenarioButton.input.onDown.add(function () {
     this.loadScenario(scenarioIndex); // Oh yeah sweet potential off by one error
