@@ -12,7 +12,7 @@ if (HelixPiEditor.worker === undefined) {
     HelixPiEditor.results(helixPi.deserialize.results(e.data));
     HelixPiEditor.Editor.renderResults(HelixPiEditor.results());
 
-    kickOffWorkerLoop();
+    setTimeout(kickOffWorkerLoop, 1000);
   };
 }
 
