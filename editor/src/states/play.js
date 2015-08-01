@@ -119,7 +119,7 @@ HelixPiEditor.Play.createActors = function () {
       checkCollision: that.checkCollision.bind(that)
     });
 
-    return new Actor(sprite, individuals[0], compiledApi, individuals[0].fitness, participant);
+    return new Actor(sprite, individuals[0], compiledApi, individuals[0].fitness.score, participant);
   });
 }
 

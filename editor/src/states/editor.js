@@ -535,7 +535,7 @@ HelixPiEditor.Editor.renderResults = function (results) {
   this.trigger('renderResults');
 
   _.each(results, function (results, name) {
-    var resultText = new Kiwi.GameObjects.TextField(that, name + ': ' + Math.round(results[0].fitness), 600, resultHeight, '#FFF', 20);
+    var resultText = new Kiwi.GameObjects.TextField(that, name + ': ' + Math.round(results[0].fitness.score), 600, resultHeight, '#FFF', 20);
     resultHeight += resultOffset;
 
     that.addChild(resultText);
