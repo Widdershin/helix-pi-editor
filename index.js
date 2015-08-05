@@ -8,6 +8,10 @@ app.get('/', function (req, res) {
   res.sendfile(__dirname + '/editor/index.html');
 });
 
+app.get('/editor', function (req, res) {
+  res.sendfile(__dirname + '/editor/editor.html');
+});
+
 var port = process.env.PORT || 3000;
 
 var server = app.listen(port, function () {

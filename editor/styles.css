@@ -1,14 +1,53 @@
+@import url(http://fonts.googleapis.com/css?family=Oxygen);
+
 #content {
   margin: auto;
   border: 1px solid white;
 }
 
 body {
+  font-family: 'Oxygen', sans-serif;
   background: black;
   color: white;
 }
 
-h1, p {
+h1, h2, p {
   text-align: center;
-  font-family: 'Helvetica', 'Arial';
+}
+
+p {
+  font-size: 1.3em;
+}
+
+h1 {
+  font-size: 3em;
+}
+
+.introduction {
+  padding-top: 60px;
+}
+
+.links {
+  font-size: 4em;
+  padding: 80px;
+  text-align: center;
+}
+
+.video {
+  margin: auto;
+  width: 500px;
+
+  padding-bottom: 40px;
+}
+
+.disabled {
+  color: lightgrey;
+}
+
+a:link {
+  color: white;
+}
+
+a:visited {
+  color: purple;
 }
