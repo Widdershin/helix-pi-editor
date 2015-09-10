@@ -12,7 +12,7 @@ if (HelixPiEditor.worker === undefined) {
     HelixPiEditor.results(helixPi.deserialize.results(e.data));
     HelixPiEditor.Editor.renderResults(HelixPiEditor.results());
 
-    setTimeout(kickOffWorkerLoop, 1000);
+    setTimeout(kickOffWorkerLoop, 100);
   };
 }
 
@@ -92,6 +92,20 @@ HelixPiEditor.Editor.create = function () {
       this.createScenarioButton(index);
     }.bind(this));
   };
+
+
+  if (this.resultLines === undefined) {
+    this.resultLines = [];
+  }
+  this.on('changeScenario', function () {
+    this.destroyResultLines();
+    this.renderResultLines(HelixPiEditor.results());
+  });
+
+  this.on('renderResults', function (results) {
+    this.destroyResultLines();
+    this.renderResultLines(results);
+  });
 
   this.loadScenario(0);
 
@@ -242,6 +256,7 @@ HelixPiEditor.Editor.updatePath = function (participant) {
     strokeWidth: 4
   });
   this.addChild(this.line);
+
 };
 
 HelixPiEditor.Editor.addKeyFrame = function () {
@@ -465,6 +480,8 @@ HelixPiEditor.Editor.loadScenario = function (scenarioIndex) {
   this.handleTimelineTick(0, true);
   this.reflowScenarioButtons();
 
+  this.scenarioIndex = scenarioIndex;
+
   this.trigger('changeScenario');
 };
 
@@ -532,7 +549,7 @@ HelixPiEditor.Editor.renderResults = function (results) {
 
   var that = this;
 
-  this.trigger('renderResults');
+  this.trigger('renderResults', [results]);
 
   _.each(results, function (results, name) {
     var resultText = new Kiwi.GameObjects.TextField(that, name + ': ' + Math.round(results[0].fitness.score), 600, resultHeight, '#FFF', 20);
@@ -572,6 +589,28 @@ HelixPiEditor.Editor.addParticipant = function (participant) {
   participantGameObject.input.onDragStopped.add(function () { this.droppedEntity(participant) }.bind(this));
 };
 
+HelixPiEditor.Editor.destroyResultLines = function (results) {
+  this.resultLines.forEach(function (resultLine) { resultLine.destroy(); });
+  this.resultLines = [];
+};
+
+HelixPiEditor.Editor.renderResultLines = function (results) {
+  var that = this;
+
+  _.each(results, function (participantResults, name) {
+    var resultLine = new Kiwi.Plugins.Primitives.Line({
+      state: that,
+      points: participantResults[0].positions[that.scenarioIndex],
+
+      strokeColor: [0.6, 0.8, 0.8],
+      strokeWidth: 4
+    });
+
+    that.addChild(resultLine);
+    that.resultLines.push(resultLine);
+  });
+};
+
 HelixPiEditor.Editor.eventHandlers = function (eventName) {
   if (this.events[eventName] === undefined) {
     this.events[eventName] = [];
@@ -584,9 +623,9 @@ HelixPiEditor.Editor.on = function (eventName, callback) {
   this.eventHandlers(eventName).push(callback.bind(this));
 };
 
-HelixPiEditor.Editor.trigger = function (eventName) {
+HelixPiEditor.Editor.trigger = function (eventName, eventArgs) {
   this.eventHandlers(eventName).forEach(function (handler) {
-    handler();
+    handler.apply(null, eventArgs);
   });
 };
 
