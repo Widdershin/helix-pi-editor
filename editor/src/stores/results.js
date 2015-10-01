@@ -1,13 +1,21 @@
+/* globals localStorage, helixPi */
+
 var HelixPiEditor = HelixPiEditor || {};
 
 (function (exports) {
-  var _results = {};
+  if (localStorage.results === undefined) {
+    localStorage.results = '{}';
+  }
 
   exports.results = function (newResults) {
     if (newResults !== undefined) {
-      _results = newResults;
+      localStorage.results = newResults;
     }
 
-    return _results;
+    return helixPi.deserialize.results(localStorage.results);
+  };
+
+  exports.rawResults = function () {
+    return localStorage.results;
   };
 }(HelixPiEditor));

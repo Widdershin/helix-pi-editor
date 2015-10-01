@@ -1,4 +1,4 @@
-/* global Kiwi, _, helixPi */
+/* global Kiwi, _ */
 'use strict';
 
 var HelixPiEditor = HelixPiEditor || {};
@@ -9,7 +9,7 @@ if (HelixPiEditor.worker === undefined) {
   HelixPiEditor.worker = new Worker('/worker.js');
 
   HelixPiEditor.worker.onmessage = function (e) {
-    HelixPiEditor.results(helixPi.deserialize.results(e.data));
+    HelixPiEditor.results(e.data);
     HelixPiEditor.Editor.renderResults(HelixPiEditor.results());
 
     setTimeout(kickOffWorkerLoop, 100);
@@ -17,8 +17,8 @@ if (HelixPiEditor.worker === undefined) {
 }
 
 function kickOffWorkerLoop () {
-  HelixPiEditor.worker.postMessage([HelixPiEditor.Editor.createScenario(), 5, 32, helixPi.serialize.results(HelixPiEditor.results())]);
-};
+  HelixPiEditor.worker.postMessage([HelixPiEditor.Editor.createScenario(), 5, 32, HelixPiEditor.rawResults()]);
+}
 
 HelixPiEditor.Editor.create = function () {
   this.game.huds.defaultHUD.removeAllWidgets();
@@ -33,8 +33,8 @@ HelixPiEditor.Editor.create = function () {
     this.highestFrame = _.max(_.map(this.positions, function (positionsPerParticipant) {
       return _.max(positionsPerParticipant.map(function (position) {
         return position.frame;
-      }))
-    }))
+      }));
+    }));
   });
 
   this.renderResults(HelixPiEditor.results());
@@ -91,8 +91,7 @@ HelixPiEditor.Editor.create = function () {
     this.scenarios.forEach(function (scenario, index) {
       this.createScenarioButton(index);
     }.bind(this));
-  };
-
+  }
 
   if (this.resultLines === undefined) {
     this.resultLines = [];
@@ -155,9 +154,9 @@ HelixPiEditor.Editor.handleTimelineTick = function (ratio, updateCharacterPositi
   this.currentFrame = Math.round(this.lastFrame() * ratio);
   this.displayProgressIndicator(ratio);
   if (updateCharacterPosition) {
-    this.participants.forEach(function(participant) { this.moveEntityInTime(participant, ratio) }.bind(this));
-  };
-}
+    this.participants.forEach(function (participant) { this.moveEntityInTime(participant, ratio); }.bind(this));
+  }
+};
 
 HelixPiEditor.Editor.lastFrame = function () {
   return this.highestFrame;
