@@ -37,7 +37,7 @@
   "scripts": {
     "postinstall": "npm run bundle",
     "start": "./node_modules/.bin/babel-node ./index.js",
-    "bundle": "cat bundle.js | browserify - | babel -o public/bundle.js && browserify -s window worker.js | babel -o public/worker.js"
+    "bundle": "browserify bundle.js -o public/bundle.js -g babelify --debug && browserify worker.js -o public/worker.js -g babelify"
   },
   "engines": {
     "node": "0.10.x"
