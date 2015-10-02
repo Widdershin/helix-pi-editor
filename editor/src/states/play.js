@@ -26,8 +26,12 @@ var Actor = function (sprite, genes, api, fitness, name) {
   HelixPiEditor.Play.addChild(fitnessText);
 
   return {
-    play: function () {
-      _.each(genes, function (gene) {
+    play: function (currentFrame) {
+      if (currentFrame === 0) {
+        genes[0](sprite, api);
+      }
+
+      _.each(genes.slice(1), function (gene) {
         gene(sprite, api);
       });
 
@@ -124,8 +128,10 @@ HelixPiEditor.Play.createActors = function () {
 }
 
 HelixPiEditor.Play.update = function () {
+  var that = this;
+
   _.each(this.actors, function (actor) {
-    actor.play();
+    actor.play(that.currentFrame);
   });
 
   // this.displayProgressIndicator(this.currentFrame / (this.highestFrame * 60));
