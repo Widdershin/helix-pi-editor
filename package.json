@@ -41,6 +41,6 @@
     "bundle": "browserify bundle.js -o public/bundle.js -g babelify --debug && browserify worker.js -o public/worker.js -g babelify"
   },
   "engines": {
-    "node": "0.10.x"
+    "node": "4.1.x"
   }
 }
