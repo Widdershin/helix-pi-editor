@@ -85,10 +85,15 @@ HelixPiEditor.Play.create = function () {
   this.actors = this.createActors();
 
   this.keys = {
-    up: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.W),
-    left: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A),
-    down: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.S),
-    right: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D)
+    w: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.W),
+    a: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.A),
+    s: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.S),
+    d: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.D),
+
+    up: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.UP),
+    left: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.LEFT),
+    down: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.DOWN),
+    right: this.game.input.keyboard.addKey(Kiwi.Input.Keycodes.RIGHT)
   }
 };
 
