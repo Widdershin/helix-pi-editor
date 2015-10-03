@@ -27,12 +27,8 @@ var Actor = function (sprite, genes, api, fitness, name) {
 
   return {
     play: function (currentFrame) {
-      if (currentFrame === 0) {
-        genes[0](sprite, api);
-      }
-
-      _.each(genes.slice(1), function (gene) {
-        gene(sprite, api);
+      _.each(genes, function (gene) {
+        gene(sprite, api, currentFrame);
       });
 
       api.update(sprite);
